@@ -1,0 +1,7 @@
+#define HLL_ASMOUTS_BUILD_PART_1( first_prefix, src_ext_suffix, ext_prefix ) ANY_BUILD_PART_1(first_prefix,src_ext_suffix,ext_prefix,s,_ASMOUTS,ASMOUTDIR)
+#define HLL_ASMOUTS_BUILD_PART_2A( compiler, flags_prefix ) @#ANY_HLL_BUILD_PART_4(compiler,flags_prefix,-S -fverbose-asm)
+#define HLL_ASMOUTS_BUILD_PART_2B( compiler, flags_prefix ) @#ANY_HLL_BUILD_PART_4(compiler,flags_prefix,-S)
+#define HLL_ASMOUTS_BUILD_PART_2( compiler, flags_prefix ) ANY_HLL_BUILD_PART_4(compiler,flags_prefix,-S $(VERBOSE_ASM_FLAG))
+#define HLL_ASMOUTS_BUILD_PART_3( ext_prefix ) ANY_BUILD_PART_5(ASMOUTDIR,DEPDIR,ext_prefix)
+#define HLL_ASMOUTS_BUILD_PART_4( ext_prefix ) ANY_BUILD_PART_6(ASMOUTDIR,DEPDIR,ext_prefix)
+#define HLL_ASMOUTS_BUILD_PART_5( ext_prefix ) ANY_BUILD_PART_7(ASMOUTDIR,ext_prefix)

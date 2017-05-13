@@ -1,0 +1,5 @@
+#define ASM_REGULAR_BUILD_PART_3 NASM_REGULAR_BUILD_PART_3
+#define ASM_REGULAR_BUILD_PART_4( assembler, flags_prefix, dir, compile_mode ) $(assembler) $(concat(flags_prefix,_FLAGS)) -MD $(dir)/$*.d compile_mode $< -o $
+#define ASM_REGULAR_BUILD_PART_5( ext_prefix ) HLL_REGULAR_BUILD_PART_5(ext_prefix)
+#define ASM_REGULAR_BUILD_PART_6( ext_prefix ) HLL_REGULAR_BUILD_PART_6(ext_prefix)
+#define ASM_REGULAR_BUILD_PART_7( ext_prefix ) HLL_REGULAR_BUILD_PART_7(ext_prefix)

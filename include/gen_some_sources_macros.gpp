@@ -1,0 +1,19 @@
+#define INTERNAL_OFILES_RHS
+#define INTERNAL_PFILES_RHS
+#define INTERNAL_OFILES_TEMP_RHS
+#define gen_INTERNAL_OFILES_RHS( flags_prefix ) #defeval INTERNAL_OFILES_RHS concat(INTERNAL_OFILES_RHS$(concat(flags_prefix,_OFILES))) 
+#define gen_INTERNAL_PFILES_RHS( flags_prefix ) #defeval INTERNAL_PFILES_RHS concat(INTERNAL_PFILES_RHS$(concat(flags_prefix,_PFILES))) 
+#define gen_INTERNAL_OFILES_TEMP_RHS( flags_prefix ) #defeval INTERNAL_OFILES_TEMP_RHS concat(INTERNAL_OFILES_TEMP_RHS,$(concat(flags_prefix,_OFILES_TEMP))) 
+#ifndef HAVE_CLEAN_OBJS_WITH_NO_SOURCE
+#define gen_some_groups( flags_prefix, src_ext_suffix ) gen_group(concat(flags_prefix,_OFILES),concat(flags_prefix,_SOURCES),,src_ext_suffix,o,OBJDIR) \
+gen_group(concat(flags_prefix,_PFILES),concat(flags_prefix,_SOURCES),,src_ext_suffix,P,DEPDIR) \
+gen_INTERNAL_OFILES_RHS(flags_prefix) \
+gen_INTERNAL_PFILES_RHS(flags_prefix)
+#else
+#define gen_some_groups( flags_prefix, src_ext_suffix ) gen_group(concat(flags_prefix,_OFILES),concat(flags_prefix,_SOURCES),,src_ext_suffix,o,OBJDIR) \
+gen_group(concat(flags_prefix,_PFILES),concat(flags_prefix,_SOURCES),,src_ext_suffix,P,DEPDIR) \
+gen_group(concat(flags_prefix,_OFILES_TEMP),concat(flags_prefix,_SOURCES),,src_ext_suffix,o,OBJDIR_TEMP) \
+gen_INTERNAL_OFILES_RHS(flags_prefix) \
+gen_INTERNAL_PFILES_RHS(flags_prefix) \
+gen_INTERNAL_OFILES_TEMP_RHS(flags_prefix)
+#endif
