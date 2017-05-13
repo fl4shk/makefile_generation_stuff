@@ -3,6 +3,8 @@ src=makefile_generic_src.gpp
 gpp -DGENERIC ${src} > makefile_generic
 #gpp -DDO_CXX -DHAVE_DISASSEMBLE ${src} > C++/makefile_cxx
 #gpp -DDO_C -DHAVE_DISASSEMBLE ${src} > C/makefile_c
+mkdir -p C++
+mkdir -p C
 gpp -DDO_CXX -DHAVE_DEBUG ${src} > C++/makefile_cxx
 gpp -DDO_CXX ${src} > C++/makefile_cxx_no_debug
 gpp -DDO_C -DHAVE_DEBUG ${src} > C/makefile_c
