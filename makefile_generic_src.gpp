@@ -158,7 +158,7 @@ OPTIMIZATION_LEVEL:=$(REGULAR_OPTIMIZATION_LEVEL)
 #endif
 EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \\
 	-mthumb-interwork \\
-	-fno-threadsafe-statics-nostartfiles
+	-fno-threadsafe-statics -nostartfiles
 #EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -marm \\
 #	-mthumb-interwork \\
 #	-fno-threadsafe-statics -nostartfiles
