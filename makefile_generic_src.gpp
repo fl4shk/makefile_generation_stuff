@@ -86,7 +86,7 @@ VERBOSE_ASM_FLAG:=
 
 #endif
 #if defined(GBA)
-PREFIX:=$(DEVKITARM)arm-none-eabi-
+PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-
 #elif defined(DO_ARM)
 PREFIX:=arm-none-eabi-
 
