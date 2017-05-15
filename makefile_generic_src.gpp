@@ -7,6 +7,21 @@
 #define HAVE_ONLY_PREPROCESS
 #define HAVE_DEBUG
 #endif
+#if 0
+
+
+#endif
+#ifdef GBA
+#define DO_CXX
+#define DO_S
+#define DO_ARM
+#define HAVE_DISASSEMBLE
+#define HAVE_DEBUG
+#endif
+#if 0
+
+
+#endif
 #define concat #1#2
 #include "include/basic_gen_macros.gpp"
 #include "include/gen_some_sources_macros.gpp"
@@ -19,6 +34,9 @@
 # Edit these variables if more directories are needed.  
 # Separate each entry by spaces.
 SHARED_SRC_DIRS:=$(CURDIR) src
+#ifdef GBA
+BINARY_DIRS:=
+#endif
 #ifdef DO_CXX
 CXX_DIRS:=$(SHARED_SRC_DIRS)
 #endif
@@ -67,7 +85,9 @@ VERBOSE_ASM_FLAG:=
 #VERBOSE_ASM_FLAG:=-fverbose-asm
 
 #endif
-#ifdef DO_ARM
+#if defined(GBA)
+PREFIX:=$(DEVKITARM)arm-none-eabi-
+#elif defined(DO_ARM)
 PREFIX:=arm-none-eabi-
 
 #endif
@@ -87,7 +107,9 @@ C_FLAGS:=$(C_FLAGS) -std=c11 INITIAL_BASE_FLAGS
 #endif
 #ifdef DO_S
 AS:=$(PREFIX)as
+#ifndef DO_ARM
 S_FLAGS:=$(S_FLAGS) -mnaked-reg #-msyntax=intel
+#endif
 
 #endif
 #ifdef DO_NS
@@ -97,6 +119,9 @@ NS_FLAGS:=$(NS_FLAGS) -f elf64
 #endif
 #ifdef HAVE_DISASSEMBLE
 OBJDUMP:=$(PREFIX)objdump
+#endif
+#ifdef GBA
+OBJCOPY:=$(PREFIX)objcopy
 #endif
 #ifdef DO_CXX
 LD:=$(CXX)
@@ -123,15 +148,27 @@ OPTIMIZATION_LEVEL:=$(REGULAR_OPTIMIZATION_LEVEL)
 #endif
 
 #ifdef DO_ARM
+#if 0
+# EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \\
+# 	-mthumb-interwork \\
+# 	-fno-threadsafe-statics -fno-rtti -nostartfiles
+# EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -marm \\
+# 	-mthumb-interwork \\
+# 	-fno-threadsafe-statics -fno-rtti -nostartfiles
+#endif
 EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \\
 	-mthumb-interwork \\
-	-fno-threadsafe-statics -fno-rtti -nostartfiles
+	-fno-threadsafe-statics-nostartfiles
 #EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -marm \\
 #	-mthumb-interwork \\
-#	-fno-threadsafe-statics -fno-rtti -nostartfiles
+#	-fno-threadsafe-statics -nostartfiles
 
 EXTRA_LD_FLAGS:=$(EXTRA_LD_FLAGS) -mthumb --specs=nosys.specs -lm \\
 	-lgcc -lc -lstdc++
+#ifdef GBA
+COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -L$(DEVKITPRO)/libgba/lib \\
+	-T $(LD_SCRIPT) -Wl,--entry=_start2 -lmm
+#endif
 
 #ifdef HAVE_DISASSEMBLE
 DISASSEMBLE_BASE_FLAGS:=-marm7tdmi
@@ -150,7 +187,7 @@ CXX_FLAGS:=$(CXX_FLAGS) $(FINAL_BASE_FLAGS)
 #ifdef DO_C
 C_FLAGS:=$(C_FLAGS) $(FINAL_BASE_FLAGS)
 #endif
-LD_FLAGS:=$(LD_FLAGS) $(EXTRA_LD_FLAGS)
+LD_FLAGS:=$(LD_FLAGS) $(EXTRA_LD_FLAGS) $(COMMON_LD_FLAGS)
 
 
 
@@ -170,6 +207,9 @@ PREPROCDIR:=preprocs$(DEBUG_SUFFIX)
 
 # Directories to search, specified at the top of this file
 export VPATH	:=	\\
+#ifdef GBA
+	gen_vpath(BINARY) \\
+#endif
 #ifdef DO_CXX
 	gen_vpath(CXX) \\
 #endif
@@ -183,6 +223,10 @@ export VPATH	:=	\\
 	gen_vpath(NS) \\
 #endif
 
+#ifdef GBA
+gen_sources(BIN,BINARY,bin)
+gen_some_groups(BIN,bin)
+#endif
 
 #ifdef DO_CXX
 gen_sources(CXX,CXX,cpp)
@@ -232,7 +276,13 @@ EFILES:=$(CXX_EFILES)
 
 
 all : all_pre $(OFILES)
+#ifndef GBA
 	$(LD) $(OBJDIR)/*.o -o $(PROJ) $(LD_FLAGS)
+#else
+	$(LD) $(OBJDIR)/*.o -o $(PROJ).elf $(LD_FLAGS) -Wl,-M > linker_map.txt
+	$(OBJCOPY) -O binary -S -g -R .iwram -R .sram $(PROJ).elf $(PROJ).gba
+	./do_gbafix.sh
+#endif
 
 # all_objs is ENTIRELY optional.
 all_objs : all_pre $(OFILES)
@@ -251,7 +301,12 @@ all_pre_asmout :
 	mkdir -p $(ASMOUTDIR)
 #endif
 
-# This sed script is basically a hack.
+#ifdef GBA
+$(BIN_OFILES) : $(OBJDIR)/%.bin.o : %.bin
+	util/bin2o_gba.sh $< $@
+#endif
+
+# This sed script is basically a hack for dependency generation stuff.
 sed_script:=$(shell echo "sed -e 's/\\#.*//' -e 's/^[^:]*: *//' -e 's/ *\\\\$$//' -e '/^$$/ d' -e 's/$$/ :/'")
 
 
