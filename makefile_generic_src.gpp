@@ -166,6 +166,7 @@ EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \\
 EXTRA_LD_FLAGS:=$(EXTRA_LD_FLAGS) -mthumb --specs=nosys.specs -lm \\
 	-lgcc -lc -lstdc++
 #ifdef GBA
+LD_SCRIPT:=linkscript.ld
 COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -L$(DEVKITPRO)/libgba/lib \\
 	-T $(LD_SCRIPT) -Wl,--entry=_start2 -lmm
 #endif
@@ -179,6 +180,9 @@ DISASSEMBLE_BASE_FLAGS:=-marm7tdmi
 
 FINAL_BASE_FLAGS:=$(OPTIMIZATION_LEVEL) \\
 	$(EXTRA_BASE_FLAGS) $(EXTRA_DEBUG_FLAGS)
+#ifdef GBA
+FINAL_BASE_FLAGS:=-I$(DEVKITPRO)/libgba/include $(FINAL_BASE_FLAGS)
+#endif
 
 # Final compiler and linker flags
 #ifdef DO_CXX
@@ -302,7 +306,7 @@ all_pre_asmout :
 #endif
 
 #ifdef GBA
-$(BIN_OFILES) : $(OBJDIR)/%.bin.o : %.bin
+$(BIN_OFILES) : $(OBJDIR)/%.o : %.bin
 	util/bin2o_gba.sh $< $@
 #endif
 
