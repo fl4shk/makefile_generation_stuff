@@ -1,4 +1,3 @@
-SHELL:=/bin/bash
 # Source directories
 SRC_DIRS:=$(CURDIR) src
 
