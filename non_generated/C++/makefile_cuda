@@ -1,0 +1,75 @@
+SHELL:=/bin/bash
+# Source directories
+SRC_DIRS:=$(CURDIR) src
+
+
+# building
+CXX:= "/opt/cuda"/bin/nvcc -ccbin g++ 
+
+#SHARED_FLAGS:=-m64 \
+#	-gencode arch=compute_30,code=sm_30 \
+#	-gencode arch=compute_35,code=sm_35 \
+#	-gencode arch=compute_37,code=sm_37 \
+#	-gencode arch=compute_50,code=sm_50 \
+#	-gencode arch=compute_52,code=sm_52 \
+#	-gencode arch=compute_60,code=sm_60 \
+#	-gencode arch=compute_60,code=compute_60
+SHARED_FLAGS:=-m64 \
+	-gencode arch=compute_50,code=sm_50 \
+	-gencode arch=compute_52,code=sm_52 \
+	-gencode arch=compute_60,code=sm_60 \
+	-gencode arch=compute_60,code=compute_60
+
+CXX_FLAGS:=$(SHARED_FLAGS) --std c++11 -x cu
+
+COMP:=$(CXX) $(CXX_FLAGS)
+
+LD:=$(CXX)
+LD_FLAGS:=$(SHARED_FLAGS)
+LINK:=$(LD) $(LD_FLAGS)
+
+
+
+#PROJ:=global_memory_test_1
+PROJ:=$(shell basename $(CURDIR))
+
+# Generated directories
+OBJDIR:=objs$(DEBUG_SUFFIX)
+
+# Directories to search, specified at the top of this file
+export VPATH	:=	\
+	$(foreach DIR,$(SRC_DIRS),$(CURDIR)/$(DIR)) \
+
+
+SRC_FILES:=$(foreach DIR,$(SRC_DIRS),$(notdir $(wildcard $(DIR)/*.cpp)))
+OBJ_FILES:=$(SRC_FILES:%.cpp=$(OBJDIR)/%.o)
+
+
+TO_CLEAN_NON_DIRS:=$(OBJDIR)/*.o $(PROJ) tags *.taghl gmon.out
+TO_CLEAN:=$(OBJDIR) $(TO_CLEAN_NON_DIRS)
+
+#main.o: main.cpp main.hpp
+all: 
+	@$(MAKE) --no-print-directory temp_clean
+	@$(MAKE) --no-print-directory all_pre
+	@$(MAKE) --no-print-directory all_objs
+	$(LINK) $(OBJDIR)/*.o -o $(PROJ)
+
+
+temp_clean:
+	rm -rf $(TO_CLEAN_NON_DIRS)
+
+all_pre: 
+	mkdir -p $(OBJDIR)
+
+all_objs: $(OBJ_FILES)
+	@#@echo "all_objs"
+
+
+$(OBJ_FILES) : $(OBJDIR)/%.o : %.cpp
+	$(COMP) -c $< -o $@
+
+
+.PHONY : clean
+clean:
+	rm -rfv $(TO_CLEAN)
