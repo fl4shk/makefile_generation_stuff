@@ -4,7 +4,10 @@ SRC_DIRS:=$(CURDIR) src
 
 
 # building
-CXX:= "/opt/cuda"/bin/nvcc -ccbin g++ 
+CUDA_DIR:="/opt/cuda"
+CUDA_BIN:=$(CUDA_DIR)/"bin"
+CUDA_LIB64:=$(CUDA_DIR)/"lib64"
+CXX:=$(CUDA_BIN)/nvcc -ccbin g++ 
 
 #SHARED_FLAGS:=-m64 \
 #	-gencode arch=compute_30,code=sm_30 \
@@ -73,3 +76,9 @@ $(OBJ_FILES) : $(OBJDIR)/%.o : %.cpp
 .PHONY : clean
 clean:
 	rm -rfv $(TO_CLEAN)
+
+.PHONY : profile
+profile:
+	export PATH=$(CUDA_BIN); \
+	export LD_LIBRARY_PATH=$(CUDA_LIB64); \
+	$(CUDA_BIN)/nvprof ./$(PROJ)
