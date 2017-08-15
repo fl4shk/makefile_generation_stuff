@@ -69,7 +69,7 @@ all_objs: $(OBJ_FILES)
 
 
 $(OBJ_FILES) : $(OBJDIR)/%.o : %.cpp
-	$(COMP) -c $< -o $@
+	$(COMP) -dc $< -o $@
 
 
 .PHONY : clean
