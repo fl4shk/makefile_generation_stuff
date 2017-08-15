@@ -320,8 +320,10 @@ $(BIN_OFILES) : $(OBJDIR)/%.o : %.bin
 	util/bin2o_gba.sh $< $@
 #endif
 
+#if 0
 # This sed script is basically a hack for dependency generation stuff.
 sed_script:=$(shell echo "sed -e 's/\\#.*//' -e 's/^[^:]*: *//' -e 's/ *\\\\$$//' -e '/^$$/ d' -e 's/$$/ :/'")
+#endif
 
 
 # Here's where things get really messy.
@@ -377,8 +379,12 @@ only_preprocess_pre :
 	mkdir -p $(PREPROCDIR)
 
 
-$(CXX_EFILES) : $(PREPROCDIR)/%.E : %.cpp
-	$(CXX) $(CXX_FLAGS) -E $< -o $@
+#$(CXX_EFILES) : $(PREPROCDIR)/%.E : %.cpp
+ANY_BUILD_PART_1(CXX,cpp,,E,_EFILES,PREPROCDIR)
+	ANY_HLL_BUILD_PART_4(CXX,CXX,-e)
+	ANY_BUILD_PART_5(OBJDIR,DEPDIR,)
+	ANY_BUILD_PART_6(OBJDIR,DEPDIR,)
+	ANY_BUILD_PART_7(OBJDIR,)
 
 
 #endif

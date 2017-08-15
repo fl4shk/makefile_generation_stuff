@@ -3,5 +3,5 @@
 #define ANY_BUILD_PART_3( arg_1 ) @echo $@" was updated or has no object file.  (Re)arg_1...."
 #define ANY_HLL_BUILD_PART_4( compiler, flags_prefix, compile_mode ) $(compiler) $(concat(flags_prefix,_FLAGS)) -MMD compile_mode $< -o $@
 #define ANY_BUILD_PART_5( src_dir, dst_dir, ext_prefix ) @cp $(src_dir)/$*.concat(ext_prefix,d) $(dst_dir)/$*.concat(ext_prefix,P)
-#define ANY_BUILD_PART_6( src_dir, dst_dir, ext_prefix ) @$(sed_script) < $(src_dir)/$*.concat(ext_prefix,d) >> $(dst_dir)/$*.concat(ext_prefix,P)
+#define ANY_BUILD_PART_6( src_dir, dst_dir, ext_prefix ) @#$(sed_script) < $(src_dir)/$*.concat(ext_prefix,d) >> $(dst_dir)/$*.concat(ext_prefix,P)
 #define ANY_BUILD_PART_7( src_dir, ext_prefix ) @rm -f $(src_dir)/$*.concat(ext_prefix,d)
