@@ -37,6 +37,9 @@ PROJ:=$(shell basename $(CURDIR))
 
 # Generated directories
 OBJDIR:=objs$(DEBUG_SUFFIX)
+DEPDIR:=deps$(DEBUG_SUFFIX)
+
+RECURSIVE_MAKE:=$(MAKE) --no-print-directory
 
 # Directories to search, specified at the top of this file
 export VPATH	:=	\
@@ -45,24 +48,33 @@ export VPATH	:=	\
 
 SRC_FILES:=$(foreach DIR,$(SRC_DIRS),$(notdir $(wildcard $(DIR)/*.cpp)))
 OBJ_FILES:=$(SRC_FILES:%.cpp=$(OBJDIR)/%.o)
+DEP_FILES:=$(SRC_FILES:%.cpp=$(DEPDIR)/%.P)
 
 
+DIRS_TO_MAKE:=$(OBJDIR) $(DEPDIR)
 TO_CLEAN_NON_DIRS:=$(OBJDIR)/*.o $(PROJ) tags *.taghl gmon.out
-TO_CLEAN:=$(OBJDIR) $(TO_CLEAN_NON_DIRS)
+TO_CLEAN:=$(DIRS_TO_MAKE) $(TO_CLEAN_NON_DIRS)
 
 #main.o: main.cpp main.hpp
 all: 
-	@$(MAKE) --no-print-directory temp_clean
-	@$(MAKE) --no-print-directory all_pre
-	@$(MAKE) --no-print-directory all_objs
+	@$(RECURSIVE_MAKE) no_objs
+	@$(RECURSIVE_MAKE) all_objs
 	$(LINK) $(OBJDIR)/*.o -o $(PROJ)
+
+no_objs:
+	@$(RECURSIVE_MAKE) temp_clean
+	@$(RECURSIVE_MAKE) all_pre
+	@$(RECURSIVE_MAKE) all_deps
 
 
 temp_clean:
 	rm -rf $(TO_CLEAN_NON_DIRS)
 
 all_pre: 
-	mkdir -p $(OBJDIR)
+	mkdir -p $(DIRS_TO_MAKE)
+
+all_deps: $(DEP_FILES)
+	@#
 
 all_objs: $(OBJ_FILES)
 	@#@echo "all_objs"
@@ -70,6 +82,9 @@ all_objs: $(OBJ_FILES)
 
 $(OBJ_FILES) : $(OBJDIR)/%.o : %.cpp
 	$(COMP) -dc $< -o $@
+
+$(DEP_FILES) : $(DEPDIR)/%.P : %.cpp
+	$(COMP) -M $< -o $@
 
 
 .PHONY : clean
