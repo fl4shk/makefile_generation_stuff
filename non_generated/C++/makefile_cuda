@@ -2,7 +2,7 @@
 SRC_DIRS:=$(CURDIR) src
 
 
-# building
+# Building
 CUDA_DIR:="/opt/cuda"
 CUDA_BIN:=$(CUDA_DIR)/"bin"
 CUDA_LIB64:=$(CUDA_DIR)/"lib64"
@@ -31,15 +31,11 @@ LD_FLAGS:=$(SHARED_FLAGS)
 LINK:=$(LD) $(LD_FLAGS)
 
 
-
-#PROJ:=global_memory_test_1
 PROJ:=$(shell basename $(CURDIR))
 
 # Generated directories
 OBJDIR:=objs$(DEBUG_SUFFIX)
 DEPDIR:=deps$(DEBUG_SUFFIX)
-
-RECURSIVE_MAKE:=$(MAKE) --no-print-directory
 
 # Directories to search, specified at the top of this file
 export VPATH	:=	\
@@ -55,20 +51,11 @@ DIRS_TO_MAKE:=$(OBJDIR) $(DEPDIR)
 TO_CLEAN_NON_DIRS:=$(OBJDIR)/*.o $(PROJ) tags *.taghl gmon.out
 TO_CLEAN:=$(DIRS_TO_MAKE) $(TO_CLEAN_NON_DIRS)
 
-#main.o: main.cpp main.hpp
 all : all_pre $(OBJ_FILES)
 	@$(LINK) $(OBJDIR)/*.o -o $(PROJ)
 
-no_objs : all_pre
-	@#
-
-temp_clean:
-	@#rm -rf $(TO_CLEAN_NON_DIRS)
-	@#$(RECURSIVE_MAKE) clean
-
 all_pre: 
 	mkdir -p $(DIRS_TO_MAKE)
-
 
 all_objs: $(OBJ_FILES)
 	@#@echo "all_objs"
@@ -77,7 +64,6 @@ all_objs: $(OBJ_FILES)
 
 $(OBJ_FILES) : $(OBJDIR)/%.o : %.cpp
 	@$(COMP) -M $< -o $(OBJDIR)/$*.d
-	@#cp $(OBJDIR)/$*.d $(DEPDIR)/$*.P
 	@echo "$(OBJDIR)/$$(cat $(OBJDIR)/$*.d)" > $(DEPDIR)/$*.P
 	@rm $(OBJDIR)/$*.d
 	$(COMP) -dc $< -o $@
