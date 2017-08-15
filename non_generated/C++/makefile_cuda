@@ -56,36 +56,33 @@ TO_CLEAN_NON_DIRS:=$(OBJDIR)/*.o $(PROJ) tags *.taghl gmon.out
 TO_CLEAN:=$(DIRS_TO_MAKE) $(TO_CLEAN_NON_DIRS)
 
 #main.o: main.cpp main.hpp
-all: 
-	@$(RECURSIVE_MAKE) no_objs
-	@$(RECURSIVE_MAKE) all_objs
-	$(LINK) $(OBJDIR)/*.o -o $(PROJ)
+all : all_pre $(OBJ_FILES)
+	@$(LINK) $(OBJDIR)/*.o -o $(PROJ)
 
-no_objs:
-	@$(RECURSIVE_MAKE) temp_clean
-	@$(RECURSIVE_MAKE) all_pre
-	@$(RECURSIVE_MAKE) all_deps
-
+no_objs : all_pre
+	@#
 
 temp_clean:
-	rm -rf $(TO_CLEAN_NON_DIRS)
+	@#rm -rf $(TO_CLEAN_NON_DIRS)
+	@#$(RECURSIVE_MAKE) clean
 
 all_pre: 
 	mkdir -p $(DIRS_TO_MAKE)
 
-all_deps: $(DEP_FILES)
-	@#
 
 all_objs: $(OBJ_FILES)
 	@#@echo "all_objs"
 
 
+
 $(OBJ_FILES) : $(OBJDIR)/%.o : %.cpp
+	@$(COMP) -M $< -o $(OBJDIR)/$*.d
+	@#cp $(OBJDIR)/$*.d $(DEPDIR)/$*.P
+	@echo "$(OBJDIR)/$$(cat $(OBJDIR)/$*.d)" > $(DEPDIR)/$*.P
+	@rm $(OBJDIR)/$*.d
 	$(COMP) -dc $< -o $@
 
-$(DEP_FILES) : $(DEPDIR)/%.P : %.cpp
-	$(COMP) -M $< -o $@
-
+-include $(DEP_FILES)
 
 .PHONY : clean
 clean:

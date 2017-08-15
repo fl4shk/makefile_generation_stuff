@@ -16,6 +16,7 @@
 #define DO_S
 #define DO_ARM
 #define HAVE_DISASSEMBLE
+#define HAVE_ONLY_PREPROCESS
 #define HAVE_DEBUG
 #endif
 #if 0
