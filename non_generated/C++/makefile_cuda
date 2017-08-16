@@ -16,9 +16,12 @@ CXX:=$(CUDA_BIN)/nvcc -ccbin g++
 #	-gencode arch=compute_52,code=sm_52 \
 #	-gencode arch=compute_60,code=sm_60 \
 #	-gencode arch=compute_60,code=compute_60
+#SHARED_FLAGS:=-m64 \
+#	-gencode arch=compute_50,code=sm_50 \
+#	-gencode arch=compute_52,code=sm_52 \
+#	-gencode arch=compute_60,code=sm_60 \
+#	-gencode arch=compute_60,code=compute_60
 SHARED_FLAGS:=-m64 \
-	-gencode arch=compute_50,code=sm_50 \
-	-gencode arch=compute_52,code=sm_52 \
 	-gencode arch=compute_60,code=sm_60 \
 	-gencode arch=compute_60,code=compute_60
 
@@ -52,7 +55,7 @@ TO_CLEAN_NON_DIRS:=$(OBJDIR)/*.o $(PROJ) tags *.taghl gmon.out
 TO_CLEAN:=$(DIRS_TO_MAKE) $(TO_CLEAN_NON_DIRS)
 
 all : all_pre $(OBJ_FILES)
-	@$(LINK) $(OBJDIR)/*.o -o $(PROJ)
+	$(LINK) $(OBJDIR)/*.o -o $(PROJ)
 
 all_pre: 
 	mkdir -p $(DIRS_TO_MAKE)
