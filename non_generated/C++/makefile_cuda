@@ -77,8 +77,14 @@ $(OBJ_FILES) : $(OBJDIR)/%.o : %.cpp
 clean:
 	rm -rfv $(TO_CLEAN)
 
+.PHONY : profile_from_start
+profile_from_start:
+	export PATH=$(CUDA_BIN); \
+	export LD_LIBRARY_PATH=$(CUDA_LIB64); \
+	$(CUDA_BIN)/nvprof ./$(PROJ)
+
 .PHONY : profile
 profile:
 	export PATH=$(CUDA_BIN); \
 	export LD_LIBRARY_PATH=$(CUDA_LIB64); \
-	$(CUDA_BIN)/nvprof ./$(PROJ)
+	$(CUDA_BIN)/nvprof --profile-from-start off ./$(PROJ)
