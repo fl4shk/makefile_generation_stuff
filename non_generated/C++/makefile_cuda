@@ -35,6 +35,7 @@ LINK:=$(LD) $(LD_FLAGS)
 
 
 PROJ:=$(shell basename $(CURDIR))
+PROJ_PROFILE_ARGS:=
 
 # Generated directories
 OBJDIR:=objs$(DEBUG_SUFFIX)
@@ -81,10 +82,11 @@ clean:
 profile_from_start:
 	export PATH=$(CUDA_BIN); \
 	export LD_LIBRARY_PATH=$(CUDA_LIB64); \
-	$(CUDA_BIN)/nvprof ./$(PROJ)
+	$(CUDA_BIN)/nvprof ./$(PROJ) $(PROJ_PROFILE_ARGS)
 
 .PHONY : profile
 profile:
 	export PATH=$(CUDA_BIN); \
 	export LD_LIBRARY_PATH=$(CUDA_LIB64); \
-	$(CUDA_BIN)/nvprof --profile-from-start off ./$(PROJ)
+	$(CUDA_BIN)/nvprof --profile-from-start off ./$(PROJ) \
+	$(PROJ_PROFILE_ARGS)
