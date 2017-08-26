@@ -20,6 +20,13 @@
 
 
 #endif
+#if (defined(DO_ARM) || defined(DO_MIPS))
+#define DO_NON_X86
+#endif
+#if 0
+
+
+#endif
 #ifdef DO_EMBEDDED
 #define INITIAL_EMBEDDED_DEFINES
 #endif

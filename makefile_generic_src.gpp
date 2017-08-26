@@ -26,7 +26,7 @@ endif
 # This is the name of the output file.  Change this if needed!
 PROJ:=$(shell basename $(CURDIR))$(DEBUG_SUFFIX)
 
-#define INITIAL_BASE_FLAGS -Wall
+#define __initial_base_flags -Wall
 
 #ifdef HAVE_DISASSEMBLE
 # This is used for do_asmouts
@@ -45,9 +45,9 @@ PREFIX:=mips-elf-
 #ifdef DO_CXX
 CXX:=$(PREFIX)g++
 #ifndef DO_MIPS
-CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 INITIAL_BASE_FLAGS
+CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 __initial_base_flags
 #else
-CXX_FLAGS:=$(CXX_FLAGS) -std=c++14 INITIAL_BASE_FLAGS
+CXX_FLAGS:=$(CXX_FLAGS) -std=c++14 __initial_base_flags
 #endif
 
 #endif
@@ -55,12 +55,12 @@ CXX_FLAGS:=$(CXX_FLAGS) -std=c++14 INITIAL_BASE_FLAGS
 CC:=$(PREFIX)gcc
 #endif
 #ifdef DO_C
-C_FLAGS:=$(C_FLAGS) -std=c11 INITIAL_BASE_FLAGS
+C_FLAGS:=$(C_FLAGS) -std=c11 __initial_base_flags
 
 #endif
 #ifdef DO_S
 AS:=$(PREFIX)as
-#ifndef DO_EMBEDDED
+#ifndef DO_NON_X86
 S_FLAGS:=$(S_FLAGS) -mnaked-reg #-msyntax=intel
 #endif
 
@@ -103,16 +103,19 @@ OPTIMIZATION_LEVEL:=$(REGULAR_OPTIMIZATION_LEVEL)
 #ifdef DO_EMBEDDED
 LD_SCRIPT:=linkscript.ld
 COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -T $(LD_SCRIPT) 
-EXTRA_BASE_FLAGS:=-fno-threadsafe-statics -nostartfiles
-EXTRA_LD_FLAGS:=-lm -lgcc -lc -lstdc++
+#endif
+#ifdef DO_NON_X86
+#define __extra_base_flags -fno-threadsafe-statics -nostartfiles
+#define __extra_ld_flags -lm -lgcc -lc -lstdc++
 #endif
 
 #ifdef DO_ARM
 EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \\
-	-mthumb-interwork  $(EXTRA_BASE_FLAGS)
+	-mthumb-interwork \\
+	__extra_base_flags
 
 EXTRA_LD_FLAGS:=$(EXTRA_LD_FLAGS) -mthumb --specs=nosys.specs \\
-
+	__extra_ld_flags 
 #ifdef GBA
 COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -L$(DEVKITPRO)/libgba/lib \\
 	-Wl,--entry=_start2 -lmm 
@@ -125,7 +128,8 @@ DISASSEMBLE_BASE_FLAGS:=-marm7tdmi
 #endif
 
 #ifdef DO_MIPS
-EXTRA_BASE_FLAGS:=-mips1
+EXTRA_BASE_FLAGS:=-mips1 __extra_base_flags
+EXTRA_LD_FLAGS:=__extra_ld_flags
 #endif
 
 
