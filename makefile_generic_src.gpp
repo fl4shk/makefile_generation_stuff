@@ -1,29 +1,4 @@
-#ifdef GENERIC
-#define DO_CXX
-#define DO_C
-#define DO_S
-#define DO_NS
-#define HAVE_DISASSEMBLE
-#define HAVE_ONLY_PREPROCESS
-#define HAVE_DEBUG
-#endif
-#if 0
-
-
-#endif
-#ifdef GBA
-#define DO_CXX
-#define DO_S
-#define DO_ARM
-#define HAVE_DISASSEMBLE
-#define HAVE_ONLY_PREPROCESS
-#define HAVE_DEBUG
-#endif
-#if 0
-
-
-#endif
-#define concat #1#2
+#include "include/top_defines.gpp"
 #include "include/basic_gen_macros.gpp"
 #include "include/gen_some_sources_macros.gpp"
 #include "include/build_macros.gpp"
@@ -31,35 +6,11 @@
 
 
 #endif
-# These directories specify where source code files are located.
-# Edit these variables if more directories are needed.  
-# Separate each entry by spaces.
-SHARED_SRC_DIRS:=$(CURDIR) src
-#ifdef GBA
-BINARY_DIRS:=
-#endif
-#ifdef DO_CXX
-CXX_DIRS:=$(SHARED_SRC_DIRS)
-#endif
-#ifdef DO_C
-C_DIRS:=$(SHARED_SRC_DIRS)
-#endif
-#ifdef DO_S
-S_DIRS:=$(SHARED_SRC_DIRS)
-#endif
-#ifdef DO_NS
-# NASM Source Directories
-# Note:  NS is a prefix for NASM in all cases
-NS_DIRS:=$(SHARED_SRC_DIRS)
-#endif
-
-# End of source directories
-
-
+#include "include/directories.gpp"
 # Comment out or un-comment out the next line to enable debugging stuff to
 # be generated
 #ifdef HAVE_DEBUG
-DEBUG:=yeah do debug
+#DEBUG:=yeah do debug
 
 DEBUG_OPTIMIZATION_LEVEL:=-O0
 #endif
@@ -75,14 +26,10 @@ endif
 # This is the name of the output file.  Change this if needed!
 PROJ:=$(shell basename $(CURDIR))$(DEBUG_SUFFIX)
 
-#if 0
-INITIAL_BASE_FLAGS:=-Wall
-#endif
 #define INITIAL_BASE_FLAGS -Wall
 
 #ifdef HAVE_DISASSEMBLE
 # This is used for do_asmouts
-VERBOSE_ASM_FLAG:=
 #VERBOSE_ASM_FLAG:=-fverbose-asm
 
 #endif
@@ -90,16 +37,21 @@ VERBOSE_ASM_FLAG:=
 PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-
 #elif defined(DO_ARM)
 PREFIX:=arm-none-eabi-
-
+#elif defined(DO_MIPS)
+PREFIX:=mips-elf-
 #endif
 
 # Compilers and initial compiler flags
 #ifdef DO_CXX
 CXX:=$(PREFIX)g++
+#ifndef DO_MIPS
 CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 INITIAL_BASE_FLAGS
+#else
+CXX_FLAGS:=$(CXX_FLAGS) -std=c++14 INITIAL_BASE_FLAGS
+#endif
 
 #endif
-#if ( defined(DO_C) || !defined(DO_CXX) )
+#if (defined(DO_C) || !defined(DO_CXX))
 CC:=$(PREFIX)gcc
 #endif
 #ifdef DO_C
@@ -108,7 +60,7 @@ C_FLAGS:=$(C_FLAGS) -std=c11 INITIAL_BASE_FLAGS
 #endif
 #ifdef DO_S
 AS:=$(PREFIX)as
-#ifndef DO_ARM
+#ifndef DO_EMBEDDED
 S_FLAGS:=$(S_FLAGS) -mnaked-reg #-msyntax=intel
 #endif
 
@@ -121,7 +73,7 @@ NS_FLAGS:=$(NS_FLAGS) -f elf64
 #ifdef HAVE_DISASSEMBLE
 OBJDUMP:=$(PREFIX)objdump
 #endif
-#ifdef GBA
+#ifdef DO_EMBEDDED
 OBJCOPY:=$(PREFIX)objcopy
 #endif
 #ifdef DO_CXX
@@ -148,28 +100,22 @@ endif
 OPTIMIZATION_LEVEL:=$(REGULAR_OPTIMIZATION_LEVEL)
 #endif
 
-#ifdef DO_ARM
-#if 0
-# EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \\
-# 	-mthumb-interwork \\
-# 	-fno-threadsafe-statics -fno-rtti -nostartfiles
-# EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -marm \\
-# 	-mthumb-interwork \\
-# 	-fno-threadsafe-statics -fno-rtti -nostartfiles
-#endif
-EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \\
-	-mthumb-interwork \\
-	-fno-threadsafe-statics -nostartfiles
-#EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -marm \\
-#	-mthumb-interwork \\
-#	-fno-threadsafe-statics -nostartfiles
-
-EXTRA_LD_FLAGS:=$(EXTRA_LD_FLAGS) -mthumb --specs=nosys.specs -lm \\
-	-lgcc -lc -lstdc++
-#ifdef GBA
+#ifdef DO_EMBEDDED
 LD_SCRIPT:=linkscript.ld
+COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -T $(LD_SCRIPT) 
+EXTRA_BASE_FLAGS:=-fno-threadsafe-statics -nostartfiles
+EXTRA_LD_FLAGS:=-lm -lgcc -lc -lstdc++
+#endif
+
+#ifdef DO_ARM
+EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \\
+	-mthumb-interwork  $(EXTRA_BASE_FLAGS)
+
+EXTRA_LD_FLAGS:=$(EXTRA_LD_FLAGS) -mthumb --specs=nosys.specs \\
+
+#ifdef GBA
 COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -L$(DEVKITPRO)/libgba/lib \\
-	-T $(LD_SCRIPT) -Wl,--entry=_start2 -lmm
+	-Wl,--entry=_start2 -lmm 
 #endif
 
 #ifdef HAVE_DISASSEMBLE
@@ -177,6 +123,11 @@ DISASSEMBLE_BASE_FLAGS:=-marm7tdmi
 #endif
 
 #endif
+
+#ifdef DO_MIPS
+EXTRA_BASE_FLAGS:=-mips1
+#endif
+
 
 
 FINAL_BASE_FLAGS:=$(OPTIMIZATION_LEVEL) \\
@@ -212,7 +163,7 @@ PREPROCDIR:=preprocs$(DEBUG_SUFFIX)
 
 # Directories to search, specified at the top of this file
 export VPATH	:=	\\
-#ifdef GBA
+#ifdef DO_EMBEDDED
 	gen_vpath(BINARY) \\
 #endif
 #ifdef DO_CXX
@@ -228,7 +179,7 @@ export VPATH	:=	\\
 	gen_vpath(NS) \\
 #endif
 
-#ifdef GBA
+#ifdef DO_EMBEDDED
 gen_sources(BIN,BINARY,bin)
 gen_some_groups(BIN,bin)
 #endif
@@ -269,7 +220,7 @@ PFILES:=INTERNAL_PFILES_RHS
 # code.  This is a hack of some sort, and I recommend NOT using it!
 OFILES_TEMP:=INTERNAL_OFILES_TEMP_RHS
 #endif
-#if ( defined(HAVE_DISASSEMBLE) && ( defined(DO_CXX) || defined(DO_C) ) )
+#if (defined(HAVE_DISASSEMBLE) && (defined(DO_CXX) || defined(DO_C)))
 ASMOUTS:=$(CXX_ASMOUTS) $(C_ASMOUTS)
 #endif
 
@@ -281,13 +232,8 @@ EFILES:=$(CXX_EFILES)
 
 
 all : all_pre $(OFILES)
-#ifndef GBA
-	$(LD) $(OBJDIR)/*.o -o $(PROJ) $(LD_FLAGS)
-#else
+#if defined(GBA)
 	$(LD) $(OBJDIR)/*.o -o $(PROJ).elf $(LD_FLAGS) -Wl,-M > linker_map.txt
-#if 0
-	$(OBJCOPY) -O binary -S -g -R .iwram -R .sram $(PROJ).elf $(PROJ).gba
-#endif
 	$(OBJCOPY) -O binary -S -g -R .iwram -R .bss -R .ewram -R .sram \\
 	-R .bss0 -R .bss1 -R .bss2 -R .bss3 \\
 	-R .bss4 -R .bss5 -R .bss6 -R .bss7 \\
@@ -297,6 +243,8 @@ all : all_pre $(OFILES)
 	-R .sram4 -R .sram5 -R .sram6 -R .sram7 \\
 	$(PROJ).elf $(PROJ).gba
 	./do_gbafix.sh
+#else
+	$(LD) $(OBJDIR)/*.o -o $(PROJ) $(LD_FLAGS)
 #endif
 
 # all_objs is ENTIRELY optional.
@@ -357,7 +305,7 @@ SHARED_REGULAR_BUILD_PART_1(S,s)
 
 #endif
 #ifdef HAVE_DISASSEMBLE
-#if ( defined(DO_CXX) || defined(DO_C) )
+#if (defined(DO_CXX) || defined(DO_C))
 # Here we have stuff for outputting assembly source code instead of an object file.
 #endif
 #ifdef DO_CXX
