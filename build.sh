@@ -2,6 +2,8 @@
 src=makefile_generic_src.gpp
 gpp -DGENERIC ${src} > makefile_generic
 gpp -DANTLR ${src} > makefile_antlr
+gpp -DJSONCPP ${src} > makefile_jsoncpp
+gpp -DANTLR -DJSONCPP ${src} > makefile_antlr_jsoncpp
 mkdir -p C++
 mkdir -p C
 gpp -DDO_CXX -DHAVE_DEBUG ${src} > C++/makefile_cxx

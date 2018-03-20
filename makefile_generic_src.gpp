@@ -53,7 +53,12 @@ PREFIX:=mips-elf-
 #ifdef DO_CXX
 CXX:=$(PREFIX)g++
 #ifndef DO_MIPS
+#ifndef JSONCPP
 CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 __initial_base_flags
+#else
+CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 __initial_base_flags \\
+	$(shell pkg-config --cflags jsoncpp)
+#endif
 #else
 CXX_FLAGS:=$(CXX_FLAGS) -std=c++14 __initial_base_flags
 #endif
@@ -91,10 +96,16 @@ LD:=$(CC)
 #endif
 
 # Initial linker flags
-#if !defined(ANTLR)
+#if !defined(ANTLR) && !defined(JSONCPP)
 LD_FLAGS:=$(LD_FLAGS) -lm
 #else
-LD_FLAGS:=$(LD_FLAGS) -lm -lantlr4-runtime
+LD_FLAGS:=$(LD_FLAGS) -lm \\
+#if defined(ANTLR)
+	-lantlr4-runtime \\
+#endif
+#if defined(JSONCPP)
+	-ljsoncpp \\
+#endif
 #endif
 
 

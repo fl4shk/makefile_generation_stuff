@@ -19,3 +19,5 @@ C/*
 C++/*
 makefile_generic
 makefile_antlr
+makefile_jsoncpp
+makefile_antlr_jsoncpp
