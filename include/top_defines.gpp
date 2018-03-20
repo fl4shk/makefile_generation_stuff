@@ -1,3 +1,10 @@
+#ifdef ANTLR
+#define GENERIC
+#endif
+#if 0
+
+
+#endif
 #ifdef GENERIC
 #define DO_CXX
 #define DO_C

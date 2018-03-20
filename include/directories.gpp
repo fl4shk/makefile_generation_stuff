@@ -1,7 +1,11 @@
 # These directories specify where source code files are located.
 # Edit these variables if more directories are needed.  
 # Separate each entry by spaces.
-SHARED_SRC_DIRS:=$(CURDIR) src
+#if !defined(ANTLR)
+SHARED_SRC_DIRS:=src
+#else
+SHARED_SRC_DIRS:=src src/gen_src
+#endif
 #ifdef DO_EMBEDDED
 BINARY_DIRS:=
 #endif

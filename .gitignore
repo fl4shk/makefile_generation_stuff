@@ -18,3 +18,4 @@ types_*.taghl
 C/*
 C++/*
 makefile_generic
+makefile_antlr

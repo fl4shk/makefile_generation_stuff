@@ -16,6 +16,10 @@ DEBUG_OPTIMIZATION_LEVEL:=-O0
 #endif
 REGULAR_OPTIMIZATION_LEVEL:=-O2
 
+#ifdef ANTLR
+NUM_JOBS:=8
+#endif
+
 #ifdef HAVE_DEBUG
 ALWAYS_DEBUG_SUFFIX:=_debug
 ifdef DEBUG
@@ -25,6 +29,10 @@ endif
 
 # This is the name of the output file.  Change this if needed!
 PROJ:=$(shell basename $(CURDIR))$(DEBUG_SUFFIX)
+
+#ifdef ANTLR
+GRAMMAR_PREFIX:=Grammar
+#endif
 
 #define __initial_base_flags -Wall
 
@@ -83,7 +91,11 @@ LD:=$(CC)
 #endif
 
 # Initial linker flags
+#if !defined(ANTLR)
 LD_FLAGS:=$(LD_FLAGS) -lm
+#else
+LD_FLAGS:=$(LD_FLAGS) -lm -lantlr4-runtime
+#endif
 
 
 
@@ -235,19 +247,37 @@ EFILES:=$(CXX_EFILES)
 #endif
 
 
+#if !defined(ANTLR)
 all : all_pre $(OFILES)
 #if defined(GBA)
 	$(LD) $(OBJDIR)/*.o -o $(PROJ).elf $(LD_FLAGS) -Wl,-M > linker_map.txt
 	$(OBJCOPY) -O binary -S -g -R .iwram -R .bss -R .ewram -R .sram \\
-	-R .bss0 -R .bss1 -R .bss2 -R .bss3 \\
-	-R .bss4 -R .bss5 -R .bss6 -R .bss7 \\
+	-R .bss0 -R .bss1 -R .bss2 -R .bss3 -R .bss4 -R .bss5 -R .bss6 -R .bss7 \\
+	-R .bss8 -R .bss9 -R .bss10 -R .bss11 -R .bss12 -R .bss13 -R .bss14 -R .bss15 \\
 	-R .iwram_bss0 -R .iwram_bss1 -R .iwram_bss2 -R .iwram_bss3 \\
 	-R .iwram_bss4 -R .iwram_bss5 -R .iwram_bss6 -R .iwram_bss7 \\
-	-R .sram0 -R .sram1 -R .sram2 -R .sram3 \\
-	-R .sram4 -R .sram5 -R .sram6 -R .sram7 \\
+	-R .iwram_bss8 -R .iwram_bss9 -R .iwram_bss10 -R .iwram_bss11 \\
+	-R .iwram_bss12 -R .iwram_bss13 -R .iwram_bss14 -R .iwram_bss15 \\
+	-R .sram0 -R .sram1 -R .sram2 -R .sram3 -R .sram4 -R .sram5 -R .sram6 -R .sram7 \\
+	-R .sram8 -R .sram9 -R .sram10 -R .sram11 -R .sram12 -R .sram13 -R .sram14 -R .sram15 \\
 	$(PROJ).elf $(PROJ).gba
 	./do_gbafix.sh
 #else
+	$(LD) $(OBJDIR)/*.o -o $(PROJ) $(LD_FLAGS)
+#endif
+#else
+MODIFED_GENERATED_SOURCES:=
+FINAL_GENERATED_SOURCES:=src/gen_src/$(GRAMMAR_PREFIX)Parser.h
+GENERATED_SOURCES:=$(MODIFED_GENERATED_SOURCES) \\
+	$(FINAL_GENERATED_SOURCES)
+
+all : all_pre $(MODIFED_GENERATED_SOURCES)
+	@make -j$(NUM_JOBS) final_generated
+
+final_generated : all_pre $(FINAL_GENERATED_SOURCES)
+	@make -j$(NUM_JOBS) non_generated
+
+non_generated : all_pre $(OFILES)
 	$(LD) $(OBJDIR)/*.o -o $(PROJ) $(LD_FLAGS)
 #endif
 
@@ -260,12 +290,25 @@ do_asmouts : all_pre all_pre_asmout $(ASMOUTS)
 	@#
 #endif
 
+#if !defined(ANTLR)
 all_pre :
 	mkdir -p $(OBJDIR) $(DEPDIR)
+#else
+all_pre :
+	mkdir -p $(OBJDIR) $(DEPDIR) src/gen_src/
+#endif
 
 #ifdef HAVE_DISASSEMBLE
 all_pre_asmout :
 	mkdir -p $(ASMOUTDIR)
+#endif
+
+#ifdef ANTLR
+src/gen_src/$(GRAMMAR_PREFIX)Parser.h : src/$(GRAMMAR_PREFIX).g4
+	if [ ! -d src/gen_src ]; then make all_pre; fi; \\
+	cp src/$(GRAMMAR_PREFIX).g4 src/gen_src && cd src/gen_src \\
+	&& antlr4 -no-listener -visitor -Dlanguage=Cpp $(GRAMMAR_PREFIX).g4 \\
+	&& rm $(GRAMMAR_PREFIX).g4
 #endif
 
 #ifdef GBA
@@ -344,8 +387,13 @@ ANY_BUILD_PART_1(CXX,cpp,,E,_EFILES,PREPROCDIR)
 #¯\\(°_o)/¯
 
 .PHONY : clean
+#if !defined(ANTLR)
 clean :
 	rm -rfv $(OBJDIR) $(DEPDIR) $(ASMOUTDIR) $(PREPROCDIR) $(PROJ) tags *.taghl gmon.out
+#else
+clean :
+	rm -rfv $(OBJDIR) $(DEPDIR) $(ASMOUTDIR) $(PREPROCDIR) $(PROJ) tags *.taghl gmon.out $(GENERATED_SOURCES) src/gen_src
+#endif
 #ifdef HAVE_CLEAN_OBJS_WITH_NO_SOURCE
 
 

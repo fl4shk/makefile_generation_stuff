@@ -1,6 +1,7 @@
 #!/bin/bash
 src=makefile_generic_src.gpp
 gpp -DGENERIC ${src} > makefile_generic
+gpp -DANTLR ${src} > makefile_antlr
 mkdir -p C++
 mkdir -p C
 gpp -DDO_CXX -DHAVE_DEBUG ${src} > C++/makefile_cxx
@@ -20,3 +21,4 @@ gpp -DDO_CXX -DDO_MIPS -DINITIAL_EMBEDDED_DEFINES ${src} > C++/makefile_cxx_do_m
 gpp -DDO_C -DDO_MIPS -DINITIAL_EMBEDDED_DEFINES ${src} > C/makefile_c_do_mips_full
 
 gpp -DGBA ${src} > C++/makefile_gba
+
