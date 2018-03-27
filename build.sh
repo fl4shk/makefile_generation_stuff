@@ -1,15 +1,19 @@
 #!/bin/bash
 src=makefile_generic_src.gpp
-gpp -DGENERIC ${src} > makefile_generic
-gpp -DANTLR ${src} > makefile_antlr
-gpp -DJSONCPP ${src} > makefile_jsoncpp
-gpp -DANTLR -DJSONCPP ${src} > makefile_antlr_jsoncpp
+mkdir -p generic
 mkdir -p C++
 mkdir -p C
+gpp -DGENERIC ${src} > generic/makefile_generic
+gpp -DANTLR ${src} > generic/makefile_antlr
+gpp -DJSONCPP ${src} > generic/makefile_jsoncpp
+gpp -DANTLR -DJSONCPP ${src} > generic/makefile_antlr_jsoncpp
+
 gpp -DDO_CXX -DHAVE_DEBUG ${src} > C++/makefile_cxx
 gpp -DDO_C -DHAVE_DEBUG ${src} > C/makefile_c
+
 gpp -DDO_CXX -DHAVE_DEBUG -DHAVE_DISASSEMBLE ${src} > C++/makefile_cxx_dis
 gpp -DDO_C -DHAVE_DEBUG -DHAVE_DISASSEMBLE ${src} > C/makefile_c_dis
+
 gpp -DDO_CXX ${src} > C++/makefile_cxx_no_debug
 gpp -DDO_C ${src} > C/makefile_c_no_debug
 
