@@ -27,8 +27,8 @@ export VPATH	:=	$(foreach DIR,$(SRCDIRS),$(CURDIR)/$(DIR))
 #SRCFILES		:=	$(foreach DIR,$(SRCDIRS),$(shell find $(DIR) \
 #	-maxdepth 1  -type f -iname "*.sv"))
 
-PKGFILES:=$(foreach DIR,$(SRCDIRS),$(wildcard $(DIR)/*.svpkg))
-SRCFILES:=$(foreach DIR,$(SRCDIRS),$(wildcard $(DIR)/*.sv))
+PKGFILES:=$(foreach DIR,$(SRCDIRS),$(wildcard $(DIR)/*.pkg.sv))
+SRCFILES:=$(foreach DIR,$(SRCDIRS),$(wildcard $(DIR)/*.src.sv))
 
 all: reminder clean
 	$(BUILD) $(PKGFILES) $(SRCFILES)
