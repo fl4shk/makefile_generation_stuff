@@ -277,7 +277,7 @@ all : all_pre $(OFILES)
 	$(PROJ).elf $(PROJ).gba
 	./do_gbafix.sh
 #else
-	$(LD) $(OBJDIR)/*.o -o $(PROJ) $(LD_FLAGS)
+	$(LD) $(OFILES) -o $(PROJ) $(LD_FLAGS)
 #endif
 #else
 MODIFED_GENERATED_SOURCES:=
@@ -292,7 +292,7 @@ final_generated : all_pre $(FINAL_GENERATED_SOURCES)
 	@make -j$(NUM_JOBS) non_generated
 
 non_generated : all_pre $(OFILES)
-	$(LD) $(OBJDIR)/*.o -o $(PROJ) $(LD_FLAGS)
+	$(LD) $(OFILES) -o $(PROJ) $(LD_FLAGS)
 #endif
 
 # all_objs is ENTIRELY optional.
