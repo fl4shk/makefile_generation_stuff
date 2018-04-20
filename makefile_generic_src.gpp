@@ -311,12 +311,12 @@ all_pre :
 all_pre :
 	mkdir -p $(OBJDIR) $(DEPDIR) src/gen_src/
 #endif
-	@for ofile in $(OFILES) \\
+	@for ofile in $(OFILES); \\
 	do \\
 		mkdir -p $$(dirname $$ofile); \\
 	done
 #ifdef HAVE_ONLY_PREPROCESS
-	@for pfile in $(PFILES) \\
+	@for pfile in $(PFILES); \\
 	do \\
 		mkdir -p $$(dirname $$pfile); \\
 	done
