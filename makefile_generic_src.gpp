@@ -188,22 +188,25 @@ OBJDIR_TEMP:=objs_temp$(DEBUG_SUFFIX)
 PREPROCDIR:=preprocs$(DEBUG_SUFFIX)
 #endif
 
-# Directories to search, specified at the top of this file
-export VPATH	:=	\\
-#ifdef DO_EMBEDDED
-	gen_vpath(BINARY) \\
-#endif
-#ifdef DO_CXX
-	gen_vpath(CXX) \\
-#endif
-#ifdef DO_C
-	gen_vpath(C) \\
-#endif
-#ifdef DO_S
-	gen_vpath(S) \\
-#endif
-#ifdef DO_NS
-	gen_vpath(NS) \\
+#if 0
+# Old VPATH stuffs
+	# Directories to search, specified at the top of this file
+	export VPATH	:=	\\
+	#ifdef DO_EMBEDDED
+		gen_vpath(BINARY) \\
+	#endif
+	#ifdef DO_CXX
+		gen_vpath(CXX) \\
+	#endif
+	#ifdef DO_C
+		gen_vpath(C) \\
+	#endif
+	#ifdef DO_S
+		gen_vpath(S) \\
+	#endif
+	#ifdef DO_NS
+		gen_vpath(NS) \\
+	#endif
 #endif
 
 #ifdef DO_EMBEDDED
@@ -307,6 +310,16 @@ all_pre :
 #else
 all_pre :
 	mkdir -p $(OBJDIR) $(DEPDIR) src/gen_src/
+#endif
+	@for ofile in $(OFILES) \\
+	do \\
+		mkdir -p $$(dirname $$ofile); \\
+	done
+#ifdef HAVE_ONLY_PREPROCESS
+	@for pfile in $(PFILES) \\
+	do \\
+		mkdir -p $$(dirname $$pfile); \\
+	done
 #endif
 
 #ifdef HAVE_DISASSEMBLE
