@@ -69,3 +69,21 @@ ifelse(STATUS_ANTLR_JSONCPP(), `both', `SHARED_SRC_DIRS := src \
 dnl _FOR(`i', 0, NUM_ANY_BUILD_TYPES(), `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', `i')) := $(SHARED_SRC_DIRS)')
 _FOR(`i', 1, NUM_ANY_BUILD_TYPES(), `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', i()),DIRS)' := $(SHARED_SRC_DIRS)
 )dnl
+
+# End of source directories
+
+# Comment out or un-comment out the next line to enable debugging stuff to
+# be generated
+#DEBUG:=yeah do debug
+
+DEBUG_OPTIMIZATION_LEVEL:=-O0
+REGULAR_OPTIMIZATION_LEVEL:=-O2
+
+
+ALWAYS_DEBUG_SUFFIX:=_debug
+ifdef DEBUG
+	DEBUG_SUFFIX:=$(ALWAYS_DEBUG_SUFFIX)
+endif
+
+# This is the name of the output file.  Change this if needed!
+PROJ:=$(shell basename $(CURDIR))$(DEBUG_SUFFIX)
