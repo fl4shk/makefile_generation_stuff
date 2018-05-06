@@ -6,7 +6,6 @@ dnl
 define(`ANTLR')dnl
 dnl define(`JSONCPP')dnl
 dnl
-dnl
 define(`STATUS_ANTLR_JSONCPP', ifdef(`ANTLR', ifdef(`JSONCPP', `both', `just_antlr'), dnl
 ifdef(`JSONCPP', `just_jsoncpp', `neither')))dnl
 
