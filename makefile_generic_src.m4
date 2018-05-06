@@ -69,30 +69,30 @@ _FOR(`i', 1, NUM_ANY_BUILD_TYPES(), `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', i
 
 # Whether or not to do debugging stuff
 #DEBUG:=yeah do debug
-
+dnl
 DEBUG_OPTIMIZATION_LEVEL:=-O0
 REGULAR_OPTIMIZATION_LEVEL:=-O2
-
+dnl
 ifdef(`ANTLR', `NUM_JOBS:=8')
-
+dnl
 ALWAYS_DEBUG_SUFFIX:=_debug
 ifdef DEBUG
 	DEBUG_SUFFIX:=$(ALWAYS_DEBUG_SUFFIX)
 endif
-
+dnl
 # This is the name of the output file.  Change this if needed!
 PROJ:=$(shell basename $(CURDIR))$(DEBUG_SUFFIX)
-
+dnl
 ifdef(`ANTLR', `GRAMMAR_PREFIX:=Grammar')dnl
-
-define(`__INITIAL_BASE_FLAGS', `-Wall')dnl
-
+dnl
+define(`__INITIAL_BASE_FLAGS', `-Wall')
+dnl
 ifdef(`HAVE_DISASSEMBLE', `# This is used for do_asmouts'
 `#VERBOSE_ASM_FLAG:=-fverbose-asm')
-
+dnl
 ifelse(ifdef(`DO_GBA', 1, 0), 1, `PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-',
 	ifdef(`DO_ARM', 1, 0), 1, `PREFIX:=arm-none-eabi')
-
+dnl
 # Compilers and initial compiler flags
 ifdef(`DO_CXX', `CXX:=$(PREFIX)g++'
 ifelse(ifdef(`JSONCPP', 1, 0), 0, 
@@ -104,15 +104,18 @@ ifdef(`JSONCPP', 1, 0), 1,
 ifdef(`DO_C', `CC:=$(PREFIX)gcc'
 `C_FLAGS:=$(C_FLAGS) -std=11 '__INITIAL_BASE_FLAGS())
 
-ifdef(`DO_S', `AS:=$(PREFIX)as' 
-ifelse(ifdef(`DO_NON_X86', 1, 0), 0, 
+ifdef(`DO_S', `AS:=$(PREFIX)as'
+ifelse(ifdef(`DO_NON_X86', 1, 0), 0,
 `S_FLAGS:=$(S_FLAGS) -mnaked-reg #-msyntax-intel'
 ))
 ifdef(`DO_NS', `NS:=nasm'
-`NS_FLAGS:=$(NS_FLAGS) -f elf64')
+`NS_FLAGS:=$(NS_FLAGS) -f elf64', dnl
+)
 
-ifdef(`HAVE_DISASSEMBLE', `OBJDUMP:=$(PREFIX)objdump')
-ifdef(`DO_EMBEDDED', `OBJCOPY:=$(PREFIX)objcopy')
+ifdef(`HAVE_DISASSEMBLE', `OBJDUMP:=$(PREFIX)objdump', dnl
+)
+ifdef(`DO_EMBEDDED', `OBJCOPY:=$(PREFIX)objcopy', dnl
+)
 
 ifdef(`DO_CXX', `LD:=$(CXX)', `LD:=$(CC)')
 
@@ -125,9 +128,9 @@ STATUS_ANTLR_JSONCPP(), `just_jsoncpp', `LD_FLAGS:=$(LD_FLAGS) -lm \'
 STATUS_ANTLR_JSONCPP(), `both', `LD_FLAGS:=$(LD_FLAGS) -lm \'
 	`-lantlr4-runtime \'
 	`-ljsoncpp \')
-
-
-
+dnl
+dnl
+dnl
 ifdef DEBUG
 	EXTRA_DEBUG_FLAGS:=-g
 	DEBUG_FLAGS:=-gdwarf-3 $(EXTRA_DEBUG_FLAGS)
@@ -143,7 +146,7 @@ ifdef(`DO_EMBEDDED', `LD_SCRIPT:=linkscript.ld'
 ifdef(`DO_NON_X86', define(`__EXTRA_BASE_FLAGS', 
 `-fno-threadsafe-statics -nostartfiles')
 define(`__EXTRA_LD_FLAGS', `-lm -lgcc -lc -lstdc++'))
-
+dnl
 ifdef(`DO_ARM', `EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \'
 	`-mthumb-interwork \'
 	`__EXTRA_BASE_FLAGS()'
@@ -152,5 +155,5 @@ ifdef(`DO_ARM', `EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \'
 ifdef(`DO_GBA', 
 `COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -L$(DEVKITPRO)/libgba/lib \'
 	`-Wl,--entry=_start2 -lmm')
-	ifdef(`HAVE_DISASSEMBLE', `DISASSEMBLE_BASE_FLAGS:=-marm7tdmi'))
+ifdef(`HAVE_DISASSEMBLE', `DISASSEMBLE_BASE_FLAGS:=-marm7tdmi'))
 
