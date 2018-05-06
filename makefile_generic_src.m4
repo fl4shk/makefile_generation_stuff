@@ -1,14 +1,8 @@
 include(include/misc_defines.m4)dnl
+include(include/generic.m4)dnl
 # These directories specify where source code files are located.
 # Edit these variables if more directories are needed.  
 # Separate each entry by spaces.
-dnl 
-define(`DO_CXX')dnl (temporary)
-define(`DO_C')dnl (temporary)
-define(`DO_S')dnl (temporary)
-define(`DO_NS')dnl (temporary)
-dnl define(`ANTLR')dnl (temporary)
-dnl define(`JSONCPP')dnl (temporary)
 dnl
 dnl
 dnl Source code languages schtick
@@ -91,25 +85,24 @@ PROJ:=$(shell basename $(CURDIR))$(DEBUG_SUFFIX)
 
 ifdef(`ANTLR', `GRAMMAR_PREFIX:=Grammar')dnl
 
-define(`INITIAL_BASE_FLAGS', `-Wall')dnl
+define(`__INITIAL_BASE_FLAGS', `-Wall')dnl
 
 ifdef(`HAVE_DISASSEMBLE', `# This is used for do_asmouts'
-`#VERBOSE_ASM_FLAG:=-fverbose-asm')dnl
+`#VERBOSE_ASM_FLAG:=-fverbose-asm')
 
 ifelse(ifdef(`DO_GBA', 1, 0), 1, `PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-',
-	ifdef(`DO_ARM', 1, 0), 1, `PREFIX:=arm-none-eabi',dnl
-	ifdef(`DO_MIPS', 1, 0), 1, `PREFIX:=mips-elf-')dnl
+	ifdef(`DO_ARM', 1, 0), 1, `PREFIX:=arm-none-eabi')
 
 # Compilers and initial compiler flags
 ifdef(`DO_CXX', `CXX:=$(PREFIX)g++'
-ifelse(ifdef(`JSONCPP', 1, 0), 0, dnl
-`CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 'INITIAL_BASE_FLAGS(),dnl
-ifdef(`JSONCPP', 1, 0), 1, dnl
-`CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 'INITIAL_BASE_FLAGS()` \'dnl
-`$(shell pkg-config --cflags jsoncpp)'))dnl
+ifelse(ifdef(`JSONCPP', 1, 0), 0, 
+`CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 '__INITIAL_BASE_FLAGS(),
+ifdef(`JSONCPP', 1, 0), 1, 
+`CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 '__INITIAL_BASE_FLAGS()` \'
+`$(shell pkg-config --cflags jsoncpp)'))
 
 ifdef(`DO_C', `CC:=$(PREFIX)gcc'
-`C_FLAGS:=$(C_FLAGS) -std=11 'INITIAL_BASE_FLAGS())dnl
+`C_FLAGS:=$(C_FLAGS) -std=11 '__INITIAL_BASE_FLAGS())
 
 ifdef(`DO_S', `AS:=$(PREFIX)as' 
 ifelse(ifdef(`DO_NON_X86', 1, 0), 0, 
@@ -119,7 +112,6 @@ ifdef(`DO_NS', `NS:=nasm'
 `NS_FLAGS:=$(NS_FLAGS) -f elf64')
 
 ifdef(`HAVE_DISASSEMBLE', `OBJDUMP:=$(PREFIX)objdump')
-
 ifdef(`DO_EMBEDDED', `OBJCOPY:=$(PREFIX)objcopy')
 
 ifdef(`DO_CXX', `LD:=$(CXX)', `LD:=$(CC)')
@@ -134,4 +126,31 @@ STATUS_ANTLR_JSONCPP(), `both', `LD_FLAGS:=$(LD_FLAGS) -lm \'
 	`-lantlr4-runtime \'
 	`-ljsoncpp \')
 
+
+
+ifdef DEBUG
+	EXTRA_DEBUG_FLAGS:=-g
+	DEBUG_FLAGS:=-gdwarf-3 $(EXTRA_DEBUG_FLAGS)
+	EXTRA_LD_FLAGS:=$(DEBUG_FLAGS)
+	OPTIMIZATION_LEVEL:=$(DEBUG_OPTIMIZATION_LEVEL)
+else
+	OPTIMIZATION_LEVEL:=$(REGULAR_OPTIMIZATION_LEVEL)
+endif
+
+ifdef(`DO_EMBEDDED', `LD_SCRIPT:=linkscript.ld'
+`COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -T $(LD_SCRIPT)')
+
+ifdef(`DO_NON_X86', define(`__EXTRA_BASE_FLAGS', 
+`-fno-threadsafe-statics -nostartfiles')
+define(`__EXTRA_LD_FLAGS', `-lm -lgcc -lc -lstdc++'))
+
+ifdef(`DO_ARM', `EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \'
+	`-mthumb-interwork \'
+	`__EXTRA_BASE_FLAGS()'
+`EXTRA_LD_FLAGS:=$(EXTRA_LD_FLAGS) -mthumb --specs=nosys.specs \'
+	`__EXTRA_LD_FLAGS()'
+ifdef(`DO_GBA', 
+`COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -L$(DEVKITPRO)/libgba/lib \'
+	`-Wl,--entry=_start2 -lmm')
+	ifdef(`HAVE_DISASSEMBLE', `DISASSEMBLE_BASE_FLAGS:=-marm7tdmi'))
 
