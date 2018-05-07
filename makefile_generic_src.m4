@@ -70,32 +70,23 @@ _FOR(`i', 1, NUM_ANY_BUILD_TYPES(), `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', i
 DEBUG_OPTIMIZATION_LEVEL:=-O0
 REGULAR_OPTIMIZATION_LEVEL:=-O2
 
-dnl #ifdef ANTLR
-dnl NUM_JOBS:=8
-dnl #endif
-ifelse(_IFNDEF(`ANTLR'), `',
-_IFDEF(`ANTLR'), `NUM_JOBS:=8'
-)`'dnl
+ifdef(`ANTLR', `NUM_JOBS:=8
+GRAMMAR_PREFIX:=Grammar', `')`'dnl
 
-dnl ALWAYS_DEBUG_SUFFIX:=_debug
-dnl ifdef DEBUG
-dnl 	DEBUG_SUFFIX:=$(ALWAYS_DEBUG_SUFFIX)
-dnl endif
-dnl 
-dnl # This is the name of the output file.  Change this if needed!
-dnl PROJ:=$(shell basename $(CURDIR))$(DEBUG_SUFFIX)
-dnl 
-dnl #ifdef ANTLR
-dnl GRAMMAR_PREFIX:=Grammar
-dnl #endif
-dnl 
-dnl #define __initial_base_flags -Wall
-dnl 
-dnl #ifdef HAVE_DISASSEMBLE
-dnl # This is used for do_asmouts
-dnl #VERBOSE_ASM_FLAG:=-fverbose-asm
-dnl 
-dnl #endif
+ALWAYS_DEBUG_SUFFIX:=_debug
+ifdef DEBUG
+	DEBUG_SUFFIX:=$(ALWAYS_DEBUG_SUFFIX)
+endif
+
+# This is the name of the output file.  Change this if needed!
+PROJ:=$(shell basename $(CURDIR))$(DEBUG_SUFFIX)
+
+define(`__INITIAL_BASE_FLAGS', `-Wall')dnl
+ifdef(`HAVE_DISASSEMBLE', 
+`undivert(include/this_is_used_for_do_asmouts.txt)',
+`')`'dnl
+
+
 dnl #if defined(GBA)
 dnl PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-
 dnl #elif defined(DO_ARM)
@@ -109,13 +100,13 @@ dnl #ifdef DO_CXX
 dnl CXX:=$(PREFIX)g++
 dnl #ifndef DO_MIPS
 dnl #ifndef JSONCPP
-dnl CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 __initial_base_flags
+dnl CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 __INITIAL_BASE_FLAGS
 dnl #else
-dnl CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 __initial_base_flags \\
+dnl CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 __INITIAL_BASE_FLAGS \\
 dnl 	$(shell pkg-config --cflags jsoncpp)
 dnl #endif
 dnl #else
-dnl CXX_FLAGS:=$(CXX_FLAGS) -std=c++14 __initial_base_flags
+dnl CXX_FLAGS:=$(CXX_FLAGS) -std=c++14 __INITIAL_BASE_FLAGS
 dnl #endif
 dnl 
 dnl #endif
@@ -123,7 +114,7 @@ dnl #if (defined(DO_C) || !defined(DO_CXX))
 dnl CC:=$(PREFIX)gcc
 dnl #endif
 dnl #ifdef DO_C
-dnl C_FLAGS:=$(C_FLAGS) -std=c11 __initial_base_flags
+dnl C_FLAGS:=$(C_FLAGS) -std=c11 __INITIAL_BASE_FLAGS
 dnl 
 dnl #endif
 dnl #ifdef DO_S
