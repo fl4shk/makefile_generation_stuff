@@ -255,8 +255,16 @@ _ARRGET(`ARR_NON_HLL_BUILD_FILEEXTS', i()), `OBJDIR', `o')'
 _ARRGET(`ARR_NON_HLL_BUILD_FILEEXTS', i()), `DEPDIR', `P')'
 
 ))
+dnl
+dnl
 # Compiler-generated files
 # OFILES are object code files (extension .o)
 OFILES:=_FOR(`i', 1, eval(NUM_ANY_BUILD_TYPES() - 1), `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', i()), `OFILES')'` ')ifelse(NUM_ANY_BUILD_TYPES(), 0, `', `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES()), `OFILES')')
 # PFILES are used for automatic dependency generation
 PFILES:=_FOR(`i', 1, eval(NUM_ANY_BUILD_TYPES() - 1), `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', i()), `PFILES')'` ')ifelse(NUM_ANY_BUILD_TYPES(), 0, `', `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES()), `PFILES')')
+dnl
+dnl
+ifdef(`HAVE_DISASSEMBLE', ASMOUTS:=_FOR(`i', 1, eval(NUM_HLL_BUILD_TYPES() - 1), `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', i()), `ASMOUTS')'` ')ifelse(NUM_HLL_BUILD_TYPES(), 0, `', `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', NUM_HLL_BUILD_TYPES()), `ASMOUTS')')
+,
+`')dnl
+
