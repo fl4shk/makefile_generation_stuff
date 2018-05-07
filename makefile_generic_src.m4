@@ -7,6 +7,7 @@ dnl
 dnl
 dnl Source code languages schtick
 define(`NUM_ANY_BUILD_TYPES', 0)dnl
+define(`NUM_NON_HLL_BUILD_TYPES', 0)dnl
 define(`NUM_HLL_BUILD_TYPES', 0)dnl
 dnl
 dnl
@@ -35,6 +36,11 @@ dnl
 dnl
 dnl
 ifdef(`DO_S', `_INCR(`NUM_ANY_BUILD_TYPES')'dnl
+`_INCR(`NUM_NON_HLL_BUILD_TYPES')'dnl
+dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_TYPES', NUM_NON_HLL_BUILD_TYPES(), `as')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_PREFIXES', NUM_NON_HLL_BUILD_TYPES(), `S_')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_FILEEXTS', NUM_NON_HLL_BUILD_TYPES(), `s')')dnl
 dnl
 `_ARRSET(`ARR_ANY_BUILD_TYPES', NUM_ANY_BUILD_TYPES(), `as')'dnl
 `_ARRSET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES(), `S_')'dnl
@@ -42,6 +48,11 @@ dnl
 dnl
 dnl
 ifdef(`DO_NS', `_INCR(`NUM_ANY_BUILD_TYPES')'dnl
+`_INCR(`NUM_NON_HLL_BUILD_TYPES')'dnl
+dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_TYPES', NUM_NON_HLL_BUILD_TYPES(), `nasm')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_PREFIXES', NUM_NON_HLL_BUILD_TYPES(), `NS_')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_FILEEXTS', NUM_NON_HLL_BUILD_TYPES(), `nasm')')dnl
 dnl
 `_ARRSET(`ARR_ANY_BUILD_TYPES', NUM_ANY_BUILD_TYPES(), `nasm')'dnl
 `_ARRSET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES(), `NS_')'dnl
@@ -144,18 +155,6 @@ dnl
 dnl
 ifdef(`DO_CXX', `LD:=$(CXX)', `LD:=$(CC)')
 
-dnl # Initial linker flags
-dnl #if !defined(ANTLR) && !defined(JSONCPP)
-dnl LD_FLAGS:=$(LD_FLAGS) -lm
-dnl #else
-dnl LD_FLAGS:=$(LD_FLAGS) -lm \\
-dnl #if defined(ANTLR)
-dnl 	-lantlr4-runtime \\
-dnl #endif
-dnl #if defined(JSONCPP)
-dnl 	-ljsoncpp \\
-dnl #endif
-dnl #endif
 # Initial linker flags
 ifelse(STATUS_ANTLR_JSONCPP(), `neither', `LD_FLAGS:=$(LD_FLAGS) -lm'
 ,
@@ -177,40 +176,16 @@ else
 endif
 
 
-dnl #ifdef DO_EMBEDDED
-dnl LD_SCRIPT:=linkscript.ld
-dnl COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -T $(LD_SCRIPT) 
-dnl #endif
 ifdef(`DO_EMBEDDED', `LD_SCRIPT:=linkscript.ld'
 `COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -T $(LD_SCRIPT)'
 ,
 `')dnl
-dnl #ifdef DO_NON_X86
-dnl #define __extra_base_flags -fno-threadsafe-statics -nostartfiles
-dnl #define __extra_ld_flags -lm -lgcc -lc -lstdc++
-dnl #endif
+dnl
 ifdef(`DO_NON_X86', `define(`__EXTRA_BASE_FLAGS', `-fno-threadsafe-statics -nostartfiles')'`define(`__EXTRA_LD_FLAGS', `-lm -lgcc -lc -lstdc++')'
 
 ,
 `')dnl
 dnl
-dnl #ifdef DO_ARM
-dnl EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \\
-dnl 	-mthumb-interwork \\
-dnl 	__extra_base_flags
-dnl 
-dnl EXTRA_LD_FLAGS:=$(EXTRA_LD_FLAGS) -mthumb --specs=nosys.specs \\
-dnl 	__extra_ld_flags 
-dnl #ifdef DO_GBA
-dnl COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -L$(DEVKITPRO)/libgba/lib \\
-dnl 	-Wl,--entry=_start2 -lmm 
-dnl #endif
-dnl 
-dnl #ifdef HAVE_DISASSEMBLE
-dnl DISASSEMBLE_BASE_FLAGS:=-marm7tdmi
-dnl #endif
-dnl 
-dnl #endif
 ifdef(`DO_ARM', `EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \'
 `	-mthumb-interwork \'
 `	'__EXTRA_BASE_FLAGS()
@@ -227,3 +202,52 @@ ifdef(`HAVE_DISASSEMBLE', `DISASSEMBLE_BASE_FLAGS:=-marm7tdmi'
 ,
 `'))dnl
 
+FINAL_BASE_FLAGS:=$(OPTIMIZATION_LEVEL) \
+	$(EXTRA_BASE_FLAGS) $(EXTRA_DEBUG_FLAGS)
+ifdef(`DO_GBA', `FINAL_BASE_FLAGS:=-I$(DEVKITPRO)/libgba/include $(FINAL_BASE_FLAGS)'
+,
+`')dnl
+
+# Final compiler and linker flags
+ifdef(`DO_CXX', `CXX_FLAGS:=$(CXX_FLAGS) $(FINAL_BASE_FLAGS)'
+,
+`')dnl
+ifdef(`DO_C', `C_FLAGS:=$(C_FLAGS) $(FINAL_BASE_FLAGS)'
+,
+`')dnl
+LD_FLAGS:=$(LD_FLAGS) $(EXTRA_LD_FLAGS) $(COMMON_LD_FLAGS)
+
+
+
+
+# Generated directories
+OBJDIR:=objs$(DEBUG_SUFFIX)
+ifdef(`HAVE_DISASSEMBLE', `ASMOUTDIR:=asmouts$(DEBUG_SUFFIX)'
+,
+`')dnl
+DEPDIR:=deps$(DEBUG_SUFFIX)
+ifdef(`HAVE_ONLY_PREPROCESS', `PREPROCDIR:=preprocs$(DEBUG_SUFFIX)'
+,
+`')dnl
+
+_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), 
+`_GEN_SOURCES(_ARRGET(`ARR_HLL_BUILD_PREFIXES', i()), _ARRGET(`ARR_HLL_BUILD_PREFIXES', i()),
+_ARRGET(`ARR_HLL_BUILD_FILEEXTS', i()))'
+`_GEN_OTHER_FILES(_ARRGET(`ARR_HLL_BUILD_PREFIXES', i()), `OFILES',
+_ARRGET(`ARR_HLL_BUILD_FILEEXTS', i()), `OBJDIR', `o')'
+`_GEN_OTHER_FILES(_ARRGET(`ARR_HLL_BUILD_PREFIXES', i()), `PFILES',
+_ARRGET(`ARR_HLL_BUILD_FILEEXTS', i()), `DEPDIR', `P')'
+
+`ifdef(`HAVE_DISASSEMBLE', `undivert(include/assembly_source_code_generated_by_gcc_gplusplus.txt)'`_GEN_OTHER_FILES(_ARRGET(`ARR_HLL_BUILD_PREFIXES', i()), `ASMOUTS',
+_ARRGET(`ARR_HLL_BUILD_FILEEXTS', i()), `ASMOUTDIR', `s')'
+)'
+
+)_FOR(`i', 1, NUM_NON_HLL_BUILD_TYPES(), 
+`_GEN_SOURCES(_ARRGET(`ARR_NON_HLL_BUILD_PREFIXES', i()), _ARRGET(`ARR_NON_HLL_BUILD_PREFIXES', i()),
+_ARRGET(`ARR_NON_HLL_BUILD_FILEEXTS', i()))'
+`_GEN_OTHER_FILES(_ARRGET(`ARR_NON_HLL_BUILD_PREFIXES', i()), `OFILES',
+_ARRGET(`ARR_NON_HLL_BUILD_FILEEXTS', i()), `OBJDIR', `o')'
+`_GEN_OTHER_FILES(_ARRGET(`ARR_NON_HLL_BUILD_PREFIXES', i()), `PFILES',
+_ARRGET(`ARR_NON_HLL_BUILD_FILEEXTS', i()), `DEPDIR', `P')'
+
+)

@@ -20,3 +20,6 @@ define(`_FOR',`ifelse($#,0,``$0'',`ifelse(eval($2<=$3),1,dnl
 dnl for ifelse
 define(`_IFDEF', `ifdef(`$1', 1, 0), 1')dnl
 define(`_IFNDEF', `ifdef(`$1', 1, 0), 0')dnl
+define(`_GEN_SOURCES', _CONCAT(`$1',`SOURCES')`:=$(foreach DIR,$('`$2'`DIRS),$(wildcard $(DIR)/*.'`$3'`))')dnl
+dnl CXX_OFILES:=$(CXX_SOURCES:%.cpp=$(OBJDIR)/%.o) 
+define(`_GEN_OTHER_FILES', _CONCAT($1,$2):=$(_CONCAT($1,SOURCES):%.$3=$($4)/%.$5))dnl
