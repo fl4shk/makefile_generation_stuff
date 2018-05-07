@@ -193,4 +193,37 @@ ifdef(`DO_NON_X86', `define(`__EXTRA_BASE_FLAGS', `-fno-threadsafe-statics -nost
 
 ,
 `')dnl
-aaa
+dnl
+dnl #ifdef DO_ARM
+dnl EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \\
+dnl 	-mthumb-interwork \\
+dnl 	__extra_base_flags
+dnl 
+dnl EXTRA_LD_FLAGS:=$(EXTRA_LD_FLAGS) -mthumb --specs=nosys.specs \\
+dnl 	__extra_ld_flags 
+dnl #ifdef DO_GBA
+dnl COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -L$(DEVKITPRO)/libgba/lib \\
+dnl 	-Wl,--entry=_start2 -lmm 
+dnl #endif
+dnl 
+dnl #ifdef HAVE_DISASSEMBLE
+dnl DISASSEMBLE_BASE_FLAGS:=-marm7tdmi
+dnl #endif
+dnl 
+dnl #endif
+ifdef(`DO_ARM', `EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \'
+`	-mthumb-interwork \'
+`	'__EXTRA_BASE_FLAGS()
+
+`EXTRA_LD_FLAGS:=$(EXTRA_LD_FLAGS) -mthumb --specs=nosys.specs \'
+`	'__EXTRA_LD_FLAGS()
+ifdef(`DO_GBA', `COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -L$(DEVKITPRO)/libgba/lib \'
+`	-Wl,--entry=_start2 -lmm'
+,
+
+`')dnl
+ifdef(`HAVE_DISASSEMBLE', `DISASSEMBLE_BASE_FLAGS:=-marm7tdmi'
+
+,
+`'))dnl
+
