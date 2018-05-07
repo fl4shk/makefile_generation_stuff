@@ -87,18 +87,12 @@ ifdef(`HAVE_DISASSEMBLE',
 `')`'dnl
 
 
-dnl #if defined(GBA)
-dnl PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-
-dnl #elif defined(DO_ARM)
-dnl PREFIX:=arm-none-eabi-
-dnl #elif defined(DO_MIPS)
-dnl PREFIX:=mips-elf-
-dnl #endif
-dnl 
-dnl # Compilers and initial compiler flags
+ifelse(_IFDEF(`DO_GBA'), `PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-',
+	_IFDEF(`DO_ARM'), `PREFIX:=arm-none-eabi-')`'dnl
+
+# Compilers and initial compiler flags
 dnl #ifdef DO_CXX
 dnl CXX:=$(PREFIX)g++
-dnl #ifndef DO_MIPS
 dnl #ifndef JSONCPP
 dnl CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 __INITIAL_BASE_FLAGS
 dnl #else
@@ -106,10 +100,18 @@ dnl CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 __INITIAL_BASE_FLAGS \\
 dnl 	$(shell pkg-config --cflags jsoncpp)
 dnl #endif
 dnl #else
-dnl CXX_FLAGS:=$(CXX_FLAGS) -std=c++14 __INITIAL_BASE_FLAGS
-dnl #endif
 dnl 
 dnl #endif
+ifdef(`DO_CXX', `CXX:=$(PREFIX)g++'
+ifelse(_IFNDEF(`JSONCPP'),
+`CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 '__INITIAL_BASE_FLAGS()
+
+,
+_IFDEF(`JSONCPP'), 
+`CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 '__INITIAL_BASE_FLAGS()` \'
+	`$(shell pkg-config --cflags jsoncpp)'
+
+))`'dnl
 dnl #if (defined(DO_C) || !defined(DO_CXX))
 dnl CC:=$(PREFIX)gcc
 dnl #endif
@@ -117,11 +119,26 @@ dnl #ifdef DO_C
 dnl C_FLAGS:=$(C_FLAGS) -std=c11 __INITIAL_BASE_FLAGS
 dnl 
 dnl #endif
+ifelse(_IFDEF(`DO_C'), `CC:=$(PREFIX)gcc'
+,
+_IFNDEF(`DO_CXX'), `CC:=$(PREFIX)gcc'
+)`'dnl
+ifdef(`DO_C', `C_FLAGS:=$(C_FLAGS) -std=c11 '__INITIAL_BASE_FLAGS()
+
+)`'dnl
 dnl #ifdef DO_S
 dnl AS:=$(PREFIX)as
 dnl #ifndef DO_NON_X86
 dnl S_FLAGS:=$(S_FLAGS) -mnaked-reg #-msyntax=intel
 dnl #endif
+ifdef(`DO_S', `AS:=$(PREFIX)as'
+,
+`')`'dnl
+ifdef(`DO_S',
+`ifelse(_IFNDEF(`DO_NON_X86'), `undivert(include/s_flags.txt)')'
+,
+`')`'dnl
+aaa
 dnl 
 dnl #endif
 dnl #ifdef DO_NS
