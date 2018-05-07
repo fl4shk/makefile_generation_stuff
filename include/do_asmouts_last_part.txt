@@ -1,0 +1,2 @@
+@cp $(ASMOUTDIR)/$*.d $(DEPDIR)/$*.P
+	@rm -f $(ASMOUTDIR)/$*.d

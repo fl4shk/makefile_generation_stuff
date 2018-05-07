@@ -91,12 +91,12 @@ ifdef(`DO_NS', `_INCR(`NUM_NON_HLL_BUILD_TYPES')'dnl
 dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_TYPES', NUM_NON_HLL_BUILD_TYPES(), `nasm')'dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_PREFIXES', NUM_NON_HLL_BUILD_TYPES(), `NS_')'dnl
-`_ARRSET(`ARR_NON_HLL_BUILD_EXTRA_PREFIXES', NUM_NON_HLL_BUILD_TYPES(), `NS_')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_EXTRA_PREFIXES', NUM_NON_HLL_BUILD_TYPES(), `S_')'dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_FILEEXTS', NUM_NON_HLL_BUILD_TYPES(), `nasm')'dnl
 dnl hash table type stuff
 `_ARRSET(`ARR_NON_HLL_BUILD_TYPES', `nasm', `nasm')'dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_PREFIXES', `nasm', `NS_')'dnl
-`_ARRSET(`ARR_NON_HLL_BUILD_EXTRA_PREFIXES', `nasm', `NS_')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_EXTRA_PREFIXES', `nasm', `S_')'dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_FILEEXTS', `nasm', `nasm')'dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_ASSEMBLERS', `nasm', `nasm')'dnl
 dnl
@@ -127,7 +127,7 @@ ifelse(STATUS_ANTLR_JSONCPP(), `both', `SHARED_SRC_DIRS:=src \
 	src/liborangepower_src \', 
 	STATUS_ANTLR_JSONCPP(), `neither', `SHARED_SRC_DIRS:=src \')
 
-_FOR(`i', 1, NUM_ANY_BUILD_TYPES(), `_CONCAT(GET_ANY_BUILD_PREFIX(i())),DIRS)':=$(SHARED_SRC_DIRS)
+_FOR(`i', 1, NUM_ANY_BUILD_TYPES(), `_CONCAT(`GET_ANY_BUILD_PREFIX(i())',`DIRS')':=$(SHARED_SRC_DIRS)
 )dnl
 # End of source directories
 
@@ -325,7 +325,7 @@ OFILES:=MAKE_LIST_OF_ANY_GENERATED_FILES(`OFILES')
 PFILES:=MAKE_LIST_OF_ANY_GENERATED_FILES(`PFILES')
 dnl
 dnl
-ifdef(`HAVE_DISASSEMBLE', ASMOUTS:=MAKE_LIST_OF_ANY_GENERATED_FILES(`ASMOUTS')
+ifdef(`HAVE_DISASSEMBLE', ASMOUTS:=MAKE_LIST_OF_HLL_GENERATED_FILES(`ASMOUTS')
 ,
 `')dnl
 
@@ -452,7 +452,7 @@ dnl
 ifdef(`HAVE_DISASSEMBLE', `_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),ASMOUTS)) : $(ASMOUTDIR)/%.s : %.GET_HLL_BUILD_FILEEXT(i())'
 `	@echo $@" was updated or has no object file.  (Re)Compiling...."'
 `	'`$(GET_HLL_BUILD_COMPILER(i()))' $(`_CONCAT(GET_HLL_BUILD_PREFIX(i()),FLAGS)')` -MMD -S $< -o $@'
-`	undivert(include/compile_last_part.txt)'
+`	undivert(include/do_asmouts_last_part.txt)'
 )'
 ,
 `')dnl
@@ -470,9 +470,9 @@ ifdef(`HAVE_ONLY_PREPROCESS', `.PHONY : only_preprocess'
 `	mkdir -p $(DEPDIR) $(PREPROCDIR)'
 `'
 `'
-`_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),EFILES)) : $(ASMOUTDIR)/%.s : %.GET_HLL_BUILD_FILEEXT(i())'
+`_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),EFILES)) : $(PREPROCDIR)/%.s : %.GET_HLL_BUILD_FILEEXT(i())'
 `	'`$(GET_HLL_BUILD_COMPILER(i()))' $(`_CONCAT(GET_HLL_BUILD_PREFIX(i()),FLAGS)')` -MMD -E $< -o $@'
-`	undivert(include/compile_last_part.txt)'
+`	undivert(include/only_preprocess_last_part.txt)'
 )'
 ,
 `')dnl
