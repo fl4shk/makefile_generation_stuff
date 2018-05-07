@@ -8,55 +8,103 @@ dnl
 dnl Source code languages schtick
 define(`NUM_ANY_BUILD_TYPES', 0)dnl
 define(`NUM_NON_HLL_BUILD_TYPES', 0)dnl
+define(`NUM_MISC_BUILD_TYPES', 0)dnl
 define(`NUM_HLL_BUILD_TYPES', 0)dnl
 dnl
+dnl Getters for shorter m4 source lines
+define(`GET_HLL_BUILD_TYPE', `_ARRGET(`ARR_HLL_BUILD_TYPES', $1)')dnl
+define(`GET_HLL_BUILD_PREFIX', `_ARRGET(`ARR_HLL_BUILD_PREFIXES', $1)')dnl
+define(`GET_HLL_BUILD_EXTRA_PREFIX', `_ARRGET(`ARR_HLL_BUILD_EXTRA_PREFIXES', $1)')dnl
+define(`GET_HLL_BUILD_FILEEXT', `_ARRGET(`ARR_HLL_BUILD_FILEEXTS', $1)')dnl
+define(`GET_HLL_BUILD_COMPILER', `_ARRGET(`ARR_HLL_BUILD_COMPILERS', $1)')dnl
 dnl
-ifdef(`DO_CXX', `_INCR(`NUM_ANY_BUILD_TYPES')'dnl
-`_INCR(`NUM_HLL_BUILD_TYPES')'dnl
+define(`GET_NON_HLL_BUILD_TYPE', `_ARRGET(`ARR_NON_HLL_BUILD_TYPES', $1)')dnl
+define(`GET_NON_HLL_BUILD_PREFIX', `_ARRGET(`ARR_NON_HLL_BUILD_PREFIXES', $1)')dnl
+define(`GET_NON_HLL_BUILD_EXTRA_PREFIX', `_ARRGET(`ARR_NON_HLL_BUILD_EXTRA_PREFIXES', $1)')dnl
+define(`GET_NON_HLL_BUILD_FILEEXT', `_ARRGET(`ARR_NON_HLL_BUILD_FILEEXTS', $1)')dnl
+dnl
+define(`GET_MISC_BUILD_TYPE', `_ARRGET(`ARR_MISC_BUILD_TYPES', $1)')dnl
+define(`GET_MISC_BUILD_PREFIX', `_ARRGET(`ARR_MISC_BUILD_PREFIXES', $1)')dnl
+define(`GET_MISC_BUILD_EXTRA_PREFIX', `_ARRGET(`ARR_MISC_BUILD_EXTRA_PREFIXES', $1)')dnl
+define(`GET_MISC_BUILD_FILEEXT', `_ARRGET(`ARR_MISC_BUILD_FILEEXTS', $1)')dnl
+dnl
+define(`GET_ANY_BUILD_TYPE', `_ARRGET(`ARR_ANY_BUILD_TYPES', $1)')dnl
+define(`GET_ANY_BUILD_PREFIX', `_ARRGET(`ARR_ANY_BUILD_PREFIXES', $1)')dnl
+define(`GET_ANY_BUILD_EXTRA_PREFIX', `_ARRGET(`ARR_ANY_BUILD_EXTRA_PREFIXES', $1)')dnl
+define(`GET_ANY_BUILD_FILEEXT', `_ARRGET(`ARR_ANY_BUILD_FILEEXTS', $1)')dnl
+dnl
+ifdef(`DO_CXX', `_INCR(`NUM_HLL_BUILD_TYPES')'dnl
+`_INCR(`NUM_ANY_BUILD_TYPES')'dnl
 dnl
 `_ARRSET(`ARR_HLL_BUILD_TYPES', NUM_HLL_BUILD_TYPES(), `cxx')'dnl
 `_ARRSET(`ARR_HLL_BUILD_PREFIXES', NUM_HLL_BUILD_TYPES(), `CXX_')'dnl
+`_ARRSET(`ARR_HLL_BUILD_EXTRA_PREFIXES', NUM_HLL_BUILD_TYPES(), `CXX_')'dnl
 `_ARRSET(`ARR_HLL_BUILD_FILEEXTS', NUM_HLL_BUILD_TYPES(), `cpp')'dnl
+`_ARRSET(`ARR_HLL_BUILD_COMPILERS', NUM_HLL_BUILD_TYPES(), `CXX')'dnl
 dnl
 `_ARRSET(`ARR_ANY_BUILD_TYPES', NUM_ANY_BUILD_TYPES(), `cxx')'dnl
-`_ARRSET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES(), `CXX_')'dnl
-`_ARRSET(`ARR_ANY_BUILD_FILEEXTS', NUM_ANY_BUILD_TYPES(), `cpp')')dnl
+`_ARRSET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES(), `CXX_')')dnl
 dnl
 dnl
-ifdef(`DO_C', `_INCR(`NUM_ANY_BUILD_TYPES')'dnl
-`_INCR(`NUM_HLL_BUILD_TYPES')'dnl
+ifdef(`DO_C', `_INCR(`NUM_HLL_BUILD_TYPES')'dnl
+`_INCR(`NUM_ANY_BUILD_TYPES')'dnl
 dnl
 `_ARRSET(`ARR_HLL_BUILD_TYPES', NUM_HLL_BUILD_TYPES(), `c')'dnl
 `_ARRSET(`ARR_HLL_BUILD_PREFIXES', NUM_HLL_BUILD_TYPES(), `C_')'dnl
+`_ARRSET(`ARR_HLL_BUILD_EXTRA_PREFIXES', NUM_HLL_BUILD_TYPES(), `C_')'dnl
 `_ARRSET(`ARR_HLL_BUILD_FILEEXTS', NUM_HLL_BUILD_TYPES(), `c')'dnl
+`_ARRSET(`ARR_HLL_BUILD_COMPILERS', NUM_HLL_BUILD_TYPES(), `CC')'dnl
 dnl
 `_ARRSET(`ARR_ANY_BUILD_TYPES', NUM_ANY_BUILD_TYPES(), `c')'dnl
-`_ARRSET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES(), `C_')'dnl
-`_ARRSET(`ARR_ANY_BUILD_FILEEXTS', NUM_ANY_BUILD_TYPES(), `c')')dnl
+`_ARRSET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES(), `C_')')dnl
 dnl
 dnl
-ifdef(`DO_S', `_INCR(`NUM_ANY_BUILD_TYPES')'dnl
-`_INCR(`NUM_NON_HLL_BUILD_TYPES')'dnl
+ifdef(`DO_S', `_INCR(`NUM_NON_HLL_BUILD_TYPES')'dnl
+`_INCR(`NUM_ANY_BUILD_TYPES')'dnl
 dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_TYPES', NUM_NON_HLL_BUILD_TYPES(), `as')'dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_PREFIXES', NUM_NON_HLL_BUILD_TYPES(), `S_')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_EXTRA_PREFIXES', NUM_NON_HLL_BUILD_TYPES(), `S_')'dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_FILEEXTS', NUM_NON_HLL_BUILD_TYPES(), `s')'dnl
 dnl
+`_ARRSET(`MAP_NON_HLL_BUILD_TYPES', `asm', `as')'dnl
+`_ARRSET(`MAP_NON_HLL_BUILD_PREFIXES', `asm', `S_')'dnl
+`_ARRSET(`MAP_NON_HLL_BUILD_EXTRA_PREFIXES', `asm', `S_')'dnl
+`_ARRSET(`MAP_NON_HLL_BUILD_FILEEXTS', `asm', `s')'dnl
+`_ARRSET(`MAP_NON_HLL_BUILD_ASSEMBLERS', `asm', `AS')'dnl
+dnl
 `_ARRSET(`ARR_ANY_BUILD_TYPES', NUM_ANY_BUILD_TYPES(), `as')'dnl
-`_ARRSET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES(), `S_')'dnl
-`_ARRSET(`ARR_ANY_BUILD_FILEEXTS', NUM_ANY_BUILD_TYPES(), `s')')dnl
+`_ARRSET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES(), `S_')')dnl
 dnl
 dnl
-ifdef(`DO_NS', `_INCR(`NUM_ANY_BUILD_TYPES')'dnl
-`_INCR(`NUM_NON_HLL_BUILD_TYPES')'dnl
+ifdef(`DO_NS', `_INCR(`NUM_NON_HLL_BUILD_TYPES')'dnl
+`_INCR(`NUM_ANY_BUILD_TYPES')'dnl
 dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_TYPES', NUM_NON_HLL_BUILD_TYPES(), `nasm')'dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_PREFIXES', NUM_NON_HLL_BUILD_TYPES(), `NS_')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_EXTRA_PREFIXES', NUM_NON_HLL_BUILD_TYPES(), `NS_')'dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_FILEEXTS', NUM_NON_HLL_BUILD_TYPES(), `nasm')'dnl
 dnl
+`_ARRSET(`MAP_NON_HLL_BUILD_TYPES', `nasm', `nasm')'dnl
+`_ARRSET(`MAP_NON_HLL_BUILD_PREFIXES', `nasm', `NS_')'dnl
+`_ARRSET(`MAP_NON_HLL_BUILD_EXTRA_PREFIXES', `nasm', `NS_')'dnl
+`_ARRSET(`MAP_NON_HLL_BUILD_FILEEXTS', `nasm', `nasm')'dnl
+`_ARRSET(`MAP_NON_HLL_BUILD_ASSEMBLERS', `nasm', `nasm')'dnl
+dnl
 `_ARRSET(`ARR_ANY_BUILD_TYPES', NUM_ANY_BUILD_TYPES(), `nasm')'dnl
-`_ARRSET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES(), `NS_')'dnl
-`_ARRSET(`ARR_ANY_BUILD_FILEEXTS', NUM_ANY_BUILD_TYPES(), `nasm')')dnl
+`_ARRSET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES(), `NS_')')dnl
+dnl
+dnl
+ifdef(`DO_EMBEDDED', `_INCR(`NUM_MISC_BUILD_TYPES')'dnl
+`_INCR(`NUM_ANY_BUILD_TYPES')'dnl
+dnl
+`_ARRSET(`ARR_MISC_BUILD_TYPES', NUM_MISC_BUILD_TYPES(), `bin')'dnl
+`_ARRSET(`ARR_MISC_BUILD_PREFIXES', NUM_MISC_BUILD_TYPES(), `BIN_')'dnl
+`_ARRSET(`ARR_MISC_BUILD_EXTRA_PREFIXES', NUM_MISC_BUILD_TYPES(), `BINARY_')'dnl
+`_ARRSET(`ARR_MISC_BUILD_FILEEXTS', NUM_MISC_BUILD_TYPES(), `bin')'dnl
+dnl
+`_ARRSET(`ARR_ANY_BUILD_TYPES', NUM_ANY_BUILD_TYPES(), `bin')'dnl
+`_ARRSET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES(), `BIN_')')dnl
 dnl
 dnl
 define(`STATUS_ANTLR_JSONCPP', ifdef(`ANTLR', ifdef(`JSONCPP', `both', `just_antlr'), ifdef(`JSONCPP', `just_jsoncpp', `neither')))dnl
@@ -70,7 +118,7 @@ ifelse(STATUS_ANTLR_JSONCPP(), `both', `SHARED_SRC_DIRS:=src \
 	src/liborangepower_src \', 
 	STATUS_ANTLR_JSONCPP(), `neither', `SHARED_SRC_DIRS:=src \')
 
-_FOR(`i', 1, NUM_ANY_BUILD_TYPES(), `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', i()),DIRS)':=$(SHARED_SRC_DIRS)
+_FOR(`i', 1, NUM_ANY_BUILD_TYPES(), `_CONCAT(GET_ANY_BUILD_PREFIX(i())),DIRS)':=$(SHARED_SRC_DIRS)
 )dnl
 # End of source directories
 
@@ -229,97 +277,144 @@ DEPDIR:=deps$(DEBUG_SUFFIX)
 ifdef(`HAVE_ONLY_PREPROCESS', `PREPROCDIR:=preprocs$(DEBUG_SUFFIX)'
 ,
 `')dnl
+dnl ifdef(`DO_EMBEDDED', `_GEN_SOURCES(`BIN_',`BINARY_', `bin')'
+dnl ,
+dnl `')dnl
+
+_FOR(`i', 1, NUM_MISC_BUILD_TYPES(), 
+`_GEN_SOURCES(GET_MISC_BUILD_PREFIX(i()), GET_MISC_BUILD_EXTRA_PREFIX(i()),
+GET_MISC_BUILD_FILEEXT(i()))')
 
 _FOR(`i', 1, NUM_HLL_BUILD_TYPES(), 
-`_GEN_SOURCES(_ARRGET(`ARR_HLL_BUILD_PREFIXES', i()), _ARRGET(`ARR_HLL_BUILD_PREFIXES', i()),
-_ARRGET(`ARR_HLL_BUILD_FILEEXTS', i()))'
-`_GEN_OTHER_FILES(_ARRGET(`ARR_HLL_BUILD_PREFIXES', i()), `OFILES',
-_ARRGET(`ARR_HLL_BUILD_FILEEXTS', i()), `OBJDIR', `o')'
-`_GEN_OTHER_FILES(_ARRGET(`ARR_HLL_BUILD_PREFIXES', i()), `PFILES',
-_ARRGET(`ARR_HLL_BUILD_FILEEXTS', i()), `DEPDIR', `P')'
+`_GEN_SOURCES(GET_HLL_BUILD_PREFIX(i()), GET_HLL_BUILD_EXTRA_PREFIX(i()),
+GET_HLL_BUILD_FILEEXT(i()))'
+`_GEN_OTHER_FILES(GET_HLL_BUILD_PREFIX(i()), `OFILES',
+GET_HLL_BUILD_FILEEXT(i()), `OBJDIR', `o')'
+`_GEN_OTHER_FILES(GET_HLL_BUILD_PREFIX(i()), `PFILES',
+GET_HLL_BUILD_FILEEXT(i()), `DEPDIR', `P')'
 `ifdef(`HAVE_DISASSEMBLE', 
 `'
-`undivert(include/assembly_source_code_generated_by_gcc_gplusplus.txt)'`_GEN_OTHER_FILES(_ARRGET(`ARR_HLL_BUILD_PREFIXES', i()), `ASMOUTS',
-_ARRGET(`ARR_HLL_BUILD_FILEEXTS', i()), `ASMOUTDIR', `s')'
+`undivert(include/assembly_source_code_generated_by_gcc_gplusplus.txt)'`_GEN_OTHER_FILES(GET_HLL_BUILD_PREFIX(i()), `ASMOUTS',
+GET_HLL_BUILD_FILEEXT(i()), `ASMOUTDIR', `s')'
 
 ,
 `')'dnl
 
 )ifelse(NUM_NON_HLL_BUILD_TYPES(), 0, 
 `', _FOR(`i', 1, NUM_NON_HLL_BUILD_TYPES(), 
-`_GEN_SOURCES(_ARRGET(`ARR_NON_HLL_BUILD_PREFIXES', i()), _ARRGET(`ARR_NON_HLL_BUILD_PREFIXES', i()),
-_ARRGET(`ARR_NON_HLL_BUILD_FILEEXTS', i()))'
-`_GEN_OTHER_FILES(_ARRGET(`ARR_NON_HLL_BUILD_PREFIXES', i()), `OFILES',
-_ARRGET(`ARR_NON_HLL_BUILD_FILEEXTS', i()), `OBJDIR', `o')'
-`_GEN_OTHER_FILES(_ARRGET(`ARR_NON_HLL_BUILD_PREFIXES', i()), `PFILES',
-_ARRGET(`ARR_NON_HLL_BUILD_FILEEXTS', i()), `DEPDIR', `P')'
+`_GEN_SOURCES(GET_NON_HLL_BUILD_PREFIX(i()), GET_NON_HLL_BUILD_EXTRA_PREFIX(i()),
+GET_NON_HLL_BUILD_FILEEXT(i()))'
+`_GEN_OTHER_FILES(GET_NON_HLL_BUILD_PREFIX(i()), `OFILES',
+GET_NON_HLL_BUILD_FILEEXT(i()), `OBJDIR', `o')'
+`_GEN_OTHER_FILES(GET_NON_HLL_BUILD_PREFIX(i()), `PFILES',
+GET_NON_HLL_BUILD_FILEEXT(i()), `DEPDIR', `P')'
 
 ))
 dnl
 dnl
 # Compiler-generated files
 # OFILES are object code files (extension .o)
-OFILES:=_FOR(`i', 1, eval(NUM_ANY_BUILD_TYPES() - 1), `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', i()), `OFILES')'` ')ifelse(NUM_ANY_BUILD_TYPES(), 0, `', `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES()), `OFILES')')
+OFILES:=_FOR(`i', 1, eval(NUM_ANY_BUILD_TYPES() - 1), `_CONCAT(GET_ANY_BUILD_PREFIX(i()), `OFILES')'` ')ifelse(NUM_ANY_BUILD_TYPES(), 0, `', `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES()), `OFILES')')
 # PFILES are used for automatic dependency generation
-PFILES:=_FOR(`i', 1, eval(NUM_ANY_BUILD_TYPES() - 1), `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', i()), `PFILES')'` ')ifelse(NUM_ANY_BUILD_TYPES(), 0, `', `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES()), `PFILES')')
+PFILES:=_FOR(`i', 1, eval(NUM_ANY_BUILD_TYPES() - 1), `_CONCAT(GET_ANY_BUILD_PREFIX(i()), `PFILES')'` ')ifelse(NUM_ANY_BUILD_TYPES(), 0, `', `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES()), `PFILES')')
 dnl
 dnl
-ifdef(`HAVE_DISASSEMBLE', ASMOUTS:=_FOR(`i', 1, eval(NUM_HLL_BUILD_TYPES() - 1), `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', i()), `ASMOUTS')'` ')ifelse(NUM_HLL_BUILD_TYPES(), 0, `', `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', NUM_HLL_BUILD_TYPES()), `ASMOUTS')')
+ifdef(`HAVE_DISASSEMBLE', ASMOUTS:=_FOR(`i', 1, eval(NUM_HLL_BUILD_TYPES() - 1), `_CONCAT(GET_ANY_BUILD_PREFIX(i()), `ASMOUTS')'` ')ifelse(NUM_HLL_BUILD_TYPES(), 0, `', `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', NUM_HLL_BUILD_TYPES()), `ASMOUTS')')
 ,
 `')dnl
 
-dnl #ifdef HAVE_ONLY_PREPROCESS
-dnl # Preprocessed output of only C++ files
-dnl gen_group(CXX_EFILES,CXX_SOURCES,,cpp,E,PREPROCDIR)
-dnl EFILES:=$(CXX_EFILES)
-dnl #endif
 ifdef(`HAVE_ONLY_PREPROCESS', `undivert(include/preprocessed_output_of_source_files.txt)',
 `')dnl
 ifdef(`HAVE_ONLY_PREPROCESS', _FOR(`i', 1, NUM_HLL_BUILD_TYPES(), 
-`_GEN_OTHER_FILES(_ARRGET(`ARR_HLL_BUILD_PREFIXES', i()), `EFILES',
-_ARRGET(`ARR_HLL_BUILD_FILEEXTS', i()), `PREPROCDIR', `E')'
+`_GEN_OTHER_FILES(GET_HLL_BUILD_PREFIX(i()), `EFILES',
+GET_HLL_BUILD_FILEEXT(i()), `PREPROCDIR', `E')'
 ),
 `')dnl
-ifdef(`HAVE_ONLY_PREPROCESS', EFILES:=_FOR(`i', 1, eval(NUM_HLL_BUILD_TYPES() - 1), `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', i()), `EFILES')'` ')ifelse(NUM_HLL_BUILD_TYPES(), 0, `', `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', NUM_HLL_BUILD_TYPES()), `EFILES')')
+ifdef(`HAVE_ONLY_PREPROCESS', EFILES:=_FOR(`i', 1, eval(NUM_HLL_BUILD_TYPES() - 1), `_CONCAT(GET_ANY_BUILD_PREFIX(i()), `EFILES')'` ')ifelse(NUM_HLL_BUILD_TYPES(), 0, `', `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', NUM_HLL_BUILD_TYPES()), `EFILES')')
 ,
 `')dnl
-dnl
-dnl
-dnl #if !defined(ANTLR)
-dnl all : all_pre $(OFILES)
-dnl #if defined(GBA)
-dnl 	$(LD) $(OBJDIR)/*.o -o $(PROJ).elf $(LD_FLAGS) -Wl,-M > linker_map.txt
-dnl 	$(OBJCOPY) -O binary -S -g -R .iwram -R .bss -R .ewram -R .sram \\
-dnl 	-R .bss0 -R .bss1 -R .bss2 -R .bss3 -R .bss4 -R .bss5 -R .bss6 -R .bss7 \\
-dnl 	-R .bss8 -R .bss9 -R .bss10 -R .bss11 -R .bss12 -R .bss13 -R .bss14 -R .bss15 \\
-dnl 	-R .iwram_bss0 -R .iwram_bss1 -R .iwram_bss2 -R .iwram_bss3 \\
-dnl 	-R .iwram_bss4 -R .iwram_bss5 -R .iwram_bss6 -R .iwram_bss7 \\
-dnl 	-R .iwram_bss8 -R .iwram_bss9 -R .iwram_bss10 -R .iwram_bss11 \\
-dnl 	-R .iwram_bss12 -R .iwram_bss13 -R .iwram_bss14 -R .iwram_bss15 \\
-dnl 	-R .sram0 -R .sram1 -R .sram2 -R .sram3 -R .sram4 -R .sram5 -R .sram6 -R .sram7 \\
-dnl 	-R .sram8 -R .sram9 -R .sram10 -R .sram11 -R .sram12 -R .sram13 -R .sram14 -R .sram15 \\
-dnl 	$(PROJ).elf $(PROJ).gba
-dnl 	./do_gbafix.sh
-dnl #else
-dnl 	$(LD) $(OFILES) -o $(PROJ) $(LD_FLAGS)
-dnl #endif
-dnl #else
-dnl MODIFED_GENERATED_SOURCES:=
-dnl FINAL_GENERATED_SOURCES:=src/gen_src/$(GRAMMAR_PREFIX)Parser.h
-dnl GENERATED_SOURCES:=$(MODIFED_GENERATED_SOURCES) \\
-dnl 	$(FINAL_GENERATED_SOURCES)
-dnl 
-dnl all : all_pre $(MODIFED_GENERATED_SOURCES)
-dnl 	@make -j$(NUM_JOBS) final_generated
-dnl 
-dnl final_generated : all_pre $(FINAL_GENERATED_SOURCES)
-dnl 	@make -j$(NUM_JOBS) non_generated
-dnl 
-dnl non_generated : all_pre $(OFILES)
-dnl 	$(LD) $(OFILES) -o $(PROJ) $(LD_FLAGS)
-dnl #endif
-dnl 
-dnl # all_objs is ENTIRELY optional.
-dnl all_objs : all_pre $(OFILES)
-dnl 	@#
-dnl 
+
+ifelse(_IFNDEF(`ANTLR'), `.PHONY : all'
+`all : all_pre $(OFILES)'
+ifdef(`DO_GBA', `$(LD) $(OBJDIR)/*.o -o $(PROJ).elf $(LD_FLAGS) -Wl,-M > linker_map.txt'
+	`$(OBJCOPY) -O binary -S -g -R .iwram -R .bss -R .ewram -R .sram \'
+	`-R .bss0 -R .bss1 -R .bss2 -R .bss3 -R .bss4 -R .bss5 -R .bss6 -R .bss7 \'
+	`-R .bss8 -R .bss9 -R .bss10 -R .bss11 -R .bss12 -R .bss13 -R .bss14 -R .bss15 \'
+	`-R .iwram_bss0 -R .iwram_bss1 -R .iwram_bss2 -R .iwram_bss3 \'
+	`-R .iwram_bss4 -R .iwram_bss5 -R .iwram_bss6 -R .iwram_bss7 \'
+	`-R .iwram_bss8 -R .iwram_bss9 -R .iwram_bss10 -R .iwram_bss11 \'
+	`-R .iwram_bss12 -R .iwram_bss13 -R .iwram_bss14 -R .iwram_bss15 \'
+	`-R .sram0 -R .sram1 -R .sram2 -R .sram3 -R .sram4 -R .sram5 -R .sram6 -R .sram7 \'
+	`-R .sram8 -R .sram9 -R .sram10 -R .sram11 -R .sram12 -R .sram13 -R .sram14 -R .sram15 \'
+	`$(PROJ).elf $(PROJ).gba'
+	`./do_gbafix.sh',
+	`$(LD) $(OFILES) -o $(PROJ) $(LD_FLAGS)'
+), _IFDEF(`ANTLR'), 
+`MODIFED_GENERATED_SOURCES:='
+`FINAL_GENERATED_SOURCES:=src/gen_src/$(GRAMMAR_PREFIX)Parser.h'
+`GENERATED_SOURCES:=$(MODIFED_GENERATED_SOURCES) \'
+`	$(FINAL_GENERATED_SOURCES)'
+`'
+`.PHONY : all'
+`all : all_pre $(MODIFED_GENERATED_SOURCES)'
+`	@make -j$(NUM_JOBS) final_generated'
+`'
+`.PHONY : final_generated'
+`final_generated : all_pre $(FINAL_GENERATED_SOURCES)'
+`	@make -j$(NUM_JOBS) non_generated'
+`'
+`.PHONY : non_generated'
+`non_generated : all_pre $(OFILES)'
+`	$(LD) $(OFILES) -o $(PROJ) $(LD_FLAGS)'
+)dnl
+
+
+# all_objs is ENTIRELY optional
+.PHONY : all_objs
+all_objs : all_pre $(OFILES)
+	@#
+
+
+ifdef(`HAVE_DISASSEMBLE', `.PHONY : do_asmouts'
+`do_asmouts : all_pre all_pre_asmout $(ASMOUTS)'
+`	@#'
+,
+`')
+
+.PHONY : all_pre
+ifelse(_IFNDEF(`ANTLR'), `all_pre :'
+`	mkdir -p $(OBJDIR) $(DEPDIR)', _IFDEF(`ANTLR'), `all_pre :'
+`	mkdir -p $(OBJDIR) $(DEPDIR) src/gen_src/')
+	@for ofile in $(OFILES); \
+	do \
+		mkdir -p $$(dirname $$ofile); \
+	done
+	@for pfile in $(PFILES); \
+	do \
+		mkdir -p $$(dirname $$pfile); \
+	done
+
+ifdef(`HAVE_DISASSEMBLE', `.PHONY : all_pre_asmout'
+`all_pre_asmout :'
+`	mkdir -p $(ASMOUTDIR)'
+,
+`')dnl
+
+ifdef(`ANTLR', `src/gen_src/$(GRAMMAR_PREFIX)Parser.h : src/$(GRAMMAR_PREFIX).g4'
+`	if [ ! -d src/gen_src ]; then make all_pre; fi; \'
+`	cp src/$(GRAMMAR_PREFIX).g4 src/gen_src && cd src/gen_src \'
+`	&& antlr4 -no-listener -visitor -Dlanguage=Cpp $(GRAMMAR_PREFIX).g4 \'
+`	&& rm $(GRAMMAR_PREFIX).g4'
+,
+`')dnl
+ifdef(`DO_GBA', `$(BIN_OFILES) : $(OBJDIR)/%.o : %.bin'
+`	util/bin2o_gba.sh $< $@'
+,
+`')dnl
+
+# Here's where things get really messy.
+_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),OFILES)) : $(OBJDIR)/%.o : %.GET_HLL_BUILD_FILEEXT(i())'
+`	@echo $@" was updated or has no object file.  (Re)Compiling...."'
+`	'`$(GET_HLL_BUILD_COMPILER(i()))' $(`_CONCAT(GET_HLL_BUILD_PREFIX(i()),FLAGS)')` -MMD -c $< -o $@'
+`	undivert(include/compile_last_part.txt)'
+)

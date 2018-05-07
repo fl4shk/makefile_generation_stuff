@@ -1,0 +1,2 @@
+@cp $(OBJDIR)/$*.d $(DEPDIR)/$*.P
+	@rm -f $(OBJDIR)/$*.d
