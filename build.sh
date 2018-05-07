@@ -23,8 +23,8 @@ m4 -DDO_C ${src} > C/makefile_c_no_debug
 m4 -DDO_CXX -DDO_ARM -DHAVE_DEBUG -DDO_S -DHAVE_DISASSEMBLE ${src} > C++/makefile_cxx_do_arm_full
 m4 -DDO_C -DDO_ARM -DHAVE_DEBUG -DDO_S -DHAVE_DISASSEMBLE ${src} > C/makefile_c_do_arm_full
 
-m4 -DDO_CXX -DDO_MIPS -DINITIAL_EMBEDDED_DEFINES ${src} > C++/makefile_cxx_do_mips_full
-m4 -DDO_C -DDO_MIPS -DINITIAL_EMBEDDED_DEFINES ${src} > C/makefile_c_do_mips_full
+#m4 -DDO_CXX -DDO_MIPS -DINITIAL_EMBEDDED_DEFINES ${src} > C++/makefile_cxx_do_mips_full
+#m4 -DDO_C -DDO_MIPS -DINITIAL_EMBEDDED_DEFINES ${src} > C/makefile_c_do_mips_full
 
 m4 -DDO_GBA ${src} > C++/makefile_gba
 
