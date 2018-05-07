@@ -143,7 +143,7 @@ _IFDEF(`DO_EMBEDDED'), `'
 dnl
 dnl
 ifdef(`DO_CXX', `LD:=$(CXX)', `LD:=$(CC)')
-dnl 
+
 dnl # Initial linker flags
 dnl #if !defined(ANTLR) && !defined(JSONCPP)
 dnl LD_FLAGS:=$(LD_FLAGS) -lm
@@ -156,3 +156,13 @@ dnl #if defined(JSONCPP)
 dnl 	-ljsoncpp \\
 dnl #endif
 dnl #endif
+# Initial linker flags
+ifelse(STATUS_ANTLR_JSONCPP(), `neither', `LD_FLAGS:=$(LD_FLAGS) -lm'
+,
+`LD_FLAGS:=$(LD_FLAGS) -lm \'
+ifdef(`ANTLR',
+`	-lantlr4-runtime \')
+ifdef(`JSONCPP',
+`	-ljsoncpp \')
+)
+aaa
