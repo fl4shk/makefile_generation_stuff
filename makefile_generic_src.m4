@@ -71,7 +71,8 @@ DEBUG_OPTIMIZATION_LEVEL:=-O0
 REGULAR_OPTIMIZATION_LEVEL:=-O2
 
 ifdef(`ANTLR', `NUM_JOBS:=8
-GRAMMAR_PREFIX:=Grammar', `')`'dnl
+GRAMMAR_PREFIX:=Grammar'
+, `')dnl
 
 ALWAYS_DEBUG_SUFFIX:=_debug
 ifdef DEBUG
@@ -84,14 +85,14 @@ PROJ:=$(shell basename $(CURDIR))$(DEBUG_SUFFIX)
 define(`__INITIAL_BASE_FLAGS', `-Wall')dnl
 ifdef(`HAVE_DISASSEMBLE', 
 `undivert(include/this_is_used_for_do_asmouts.txt)',
-`')`'dnl
+`')dnl
 dnl
 dnl
 ifelse(_IFDEF(`DO_GBA'), `PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-'
 ,
 _IFDEF(`DO_ARM'), `PREFIX:=arm-none-eabi-'
 ,
-`')`'dnl
+`')dnl
 
 # Compilers and initial compiler flags
 ifdef(`DO_CXX', `CXX:=$(PREFIX)g++'
@@ -103,27 +104,55 @@ _IFDEF(`JSONCPP'),
 `CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 '__INITIAL_BASE_FLAGS()` \'
 	`$(shell pkg-config --cflags jsoncpp)'
 
-))`'dnl
+))dnl
 dnl
 dnl
 ifelse(_IFDEF(`DO_C'), `CC:=$(PREFIX)gcc'
 ,
 _IFNDEF(`DO_CXX'), `CC:=$(PREFIX)gcc'
-)`'dnl
+)dnl
 ifdef(`DO_C', `C_FLAGS:=$(C_FLAGS) -std=c11 '__INITIAL_BASE_FLAGS()
 
-)`'dnl
+)dnl
 dnl
 dnl
 ifdef(`DO_S', `AS:=$(PREFIX)as'
 `ifelse(_IFNDEF(`DO_NON_X86'), `undivert(include/s_flags.txt)')'
 ,
-`')`'dnl
+`')dnl
 dnl
 dnl
 ifdef(`DO_NS', `NS:=nasm'
 `NS_FLAGS:=$(NS_FLAGS) -f elf64'
 
 ,
-`')`'dnl
-aaa
+`')dnl
+dnl
+dnl
+ifdef(`HAVE_DISASSEMBLE', `OBJDUMP:=$(PREFIX)objdump'
+,
+`')dnl
+ifdef(`DO_EMBEDDED', `OBJCOPY:=$(PREFIX)objcopy'
+,
+`')dnl
+ifelse(_IFDEF(`HAVE_DISASSEMBLE'), `'
+,
+_IFDEF(`DO_EMBEDDED'), `'
+,
+`')dnl
+dnl
+dnl
+ifdef(`DO_CXX', `LD:=$(CXX)', `LD:=$(CC)')
+dnl 
+dnl # Initial linker flags
+dnl #if !defined(ANTLR) && !defined(JSONCPP)
+dnl LD_FLAGS:=$(LD_FLAGS) -lm
+dnl #else
+dnl LD_FLAGS:=$(LD_FLAGS) -lm \\
+dnl #if defined(ANTLR)
+dnl 	-lantlr4-runtime \\
+dnl #endif
+dnl #if defined(JSONCPP)
+dnl 	-ljsoncpp \\
+dnl #endif
+dnl #endif
