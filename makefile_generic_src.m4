@@ -441,7 +441,7 @@ _FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),OFILES)
 )
 ifdef(`DO_S', `$(_CONCAT(GET_NON_HLL_BUILD_PREFIX(`asm'),OFILES)) : $(OBJDIR)/%.o : %.GET_NON_HLL_BUILD_FILEEXT(`asm')'
 `	@echo $@" was updated or has no object file.  (Re)Assembling...."'
-`	'`$(GET_NON_HLL_BUILD_ASSEMBLER(`asm'))' $(`_CONCAT(GET_NON_HLL_BUILD_PREFIX(`asm'),FLAGS)')` -MD -c $< -o $@'
+`	'`$(GET_NON_HLL_BUILD_ASSEMBLER(`asm'))' $(`_CONCAT(GET_NON_HLL_BUILD_PREFIX(`asm'),FLAGS)')` -MD $(OBJDIR)/$*.d -c $< -o $@'
 `	undivert(include/compile_last_part.txt)'
 ,
 `')dnl
@@ -450,8 +450,7 @@ ifdef(`HAVE_DISASSEMBLE', `undivert(include/here_we_have_stuff_for_outputting_as
 `')dnl
 dnl
 ifdef(`HAVE_DISASSEMBLE', `_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),ASMOUTS)) : $(ASMOUTDIR)/%.s : %.GET_HLL_BUILD_FILEEXT(i())'
-`	@echo $@" was updated or has no object file.  (Re)Compiling...."'
-`	'`$(GET_HLL_BUILD_COMPILER(i()))' $(`_CONCAT(GET_HLL_BUILD_PREFIX(i()),FLAGS)')` -MMD -S $< -o $@'
+`	'`$(GET_HLL_BUILD_COMPILER(i()))' $(`_CONCAT(GET_HLL_BUILD_PREFIX(i()),FLAGS)')` -MMD -S $(VERBOSE_ASM_FLAG) $< -o $@'
 `	undivert(include/do_asmouts_last_part.txt)'
 )'
 ,
@@ -466,11 +465,11 @@ ifdef(`HAVE_ONLY_PREPROCESS', `.PHONY : only_preprocess'
 `	@#'
 `'
 `.PHONY : only_preprocess_pre'
-`only_preprocess_pre : '
+`only_preprocess_pre :'
 `	mkdir -p $(DEPDIR) $(PREPROCDIR)'
 `'
 `'
-`_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),EFILES)) : $(PREPROCDIR)/%.s : %.GET_HLL_BUILD_FILEEXT(i())'
+`_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),EFILES)) : $(PREPROCDIR)/%.E : %.GET_HLL_BUILD_FILEEXT(i())'
 `	'`$(GET_HLL_BUILD_COMPILER(i()))' $(`_CONCAT(GET_HLL_BUILD_PREFIX(i()),FLAGS)')` -MMD -E $< -o $@'
 `	undivert(include/only_preprocess_last_part.txt)'
 )'
@@ -487,11 +486,11 @@ _IFDEF(`ANTLR'),
 
 ifdef(`HAVE_DISASSEMBLE',
 `# Flags for make disassemble*'
-`DISASSEMBLE_FLAGS:=$(DISASSEMBLE_BASE_FLAGS) -C -d '
-`DISASSEMBLE_ALL_FLAGS:=$(DISASSEMBLE_BASE_FLAGS) -C -D '
+`DISASSEMBLE_FLAGS:=$(DISASSEMBLE_BASE_FLAGS) -C -d'
+`DISASSEMBLE_ALL_FLAGS:=$(DISASSEMBLE_BASE_FLAGS) -C -D'
 `'
-`DISASSEMBLE_2_FLAGS:=$(DISASSEMBLE_BASE_FLAGS) -C -S -l -d '
-`DISASSEMBLE_ALL_2_FLAGS:=$(DISASSEMBLE_BASE_FLAGS) -C -S -l -D '
+`DISASSEMBLE_2_FLAGS:=$(DISASSEMBLE_BASE_FLAGS) -C -S -l -d'
+`DISASSEMBLE_ALL_2_FLAGS:=$(DISASSEMBLE_BASE_FLAGS) -C -S -l -D'
 `'
 `.PHONY : disassemble'
 `disassemble :'
