@@ -17,3 +17,6 @@ define(`_ARRINCR', `define(`$1[$2]', eval(defn(`$1[$2]') + 1))')dnl
 define(`_ARRDECR', `define(`$1[$2]', eval(defn(`$1[$2]') - 1))')dnl
 define(`_FOR',`ifelse($#,0,``$0'',`ifelse(eval($2<=$3),1,dnl
 `pushdef(`$1',$2)$4`'popdef(`$1')$0(`$1',incr($2),$3,`$4')')')')dnl
+dnl for ifelse
+define(`_IFDEF', `ifdef(`$1', 1, 0), 1')dnl
+define(`_IFNDEF', `ifdef(`$1', 1, 0), 0')dnl
