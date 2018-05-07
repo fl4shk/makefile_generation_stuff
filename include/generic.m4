@@ -14,4 +14,4 @@ dnl
 ifdef(`DO_EMBEDDED', `define(`INITIAL_EMBEDDED_DEFINES')')dnl
 dnl
 dnl
-ifdef(`INITIAL_EMBEDDED_DEFINES',`define(`DO_S')'`define(`HAVE_DISASSEMBLE')'ifdef(`DO_CXX',`define(`HAVE_ONLY_PREPROCESS')'))dnl
+ifdef(`INITIAL_EMBEDDED_DEFINES',`define(`DO_S')'`define(`HAVE_DISASSEMBLE')'`ifdef(`DO_CXX',`define(`HAVE_ONLY_PREPROCESS')')')dnl

@@ -268,3 +268,58 @@ ifdef(`HAVE_DISASSEMBLE', ASMOUTS:=_FOR(`i', 1, eval(NUM_HLL_BUILD_TYPES() - 1),
 ,
 `')dnl
 
+dnl #ifdef HAVE_ONLY_PREPROCESS
+dnl # Preprocessed output of only C++ files
+dnl gen_group(CXX_EFILES,CXX_SOURCES,,cpp,E,PREPROCDIR)
+dnl EFILES:=$(CXX_EFILES)
+dnl #endif
+ifdef(`HAVE_ONLY_PREPROCESS', `undivert(include/preprocessed_output_of_source_files.txt)',
+`')dnl
+ifdef(`HAVE_ONLY_PREPROCESS', _FOR(`i', 1, NUM_HLL_BUILD_TYPES(), 
+`_GEN_OTHER_FILES(_ARRGET(`ARR_HLL_BUILD_PREFIXES', i()), `EFILES',
+_ARRGET(`ARR_HLL_BUILD_FILEEXTS', i()), `PREPROCDIR', `E')'
+),
+`')dnl
+ifdef(`HAVE_ONLY_PREPROCESS', EFILES:=_FOR(`i', 1, eval(NUM_HLL_BUILD_TYPES() - 1), `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', i()), `EFILES')'` ')ifelse(NUM_HLL_BUILD_TYPES(), 0, `', `_CONCAT(_ARRGET(`ARR_ANY_BUILD_PREFIXES', NUM_HLL_BUILD_TYPES()), `EFILES')')
+,
+`')dnl
+dnl
+dnl
+dnl #if !defined(ANTLR)
+dnl all : all_pre $(OFILES)
+dnl #if defined(GBA)
+dnl 	$(LD) $(OBJDIR)/*.o -o $(PROJ).elf $(LD_FLAGS) -Wl,-M > linker_map.txt
+dnl 	$(OBJCOPY) -O binary -S -g -R .iwram -R .bss -R .ewram -R .sram \\
+dnl 	-R .bss0 -R .bss1 -R .bss2 -R .bss3 -R .bss4 -R .bss5 -R .bss6 -R .bss7 \\
+dnl 	-R .bss8 -R .bss9 -R .bss10 -R .bss11 -R .bss12 -R .bss13 -R .bss14 -R .bss15 \\
+dnl 	-R .iwram_bss0 -R .iwram_bss1 -R .iwram_bss2 -R .iwram_bss3 \\
+dnl 	-R .iwram_bss4 -R .iwram_bss5 -R .iwram_bss6 -R .iwram_bss7 \\
+dnl 	-R .iwram_bss8 -R .iwram_bss9 -R .iwram_bss10 -R .iwram_bss11 \\
+dnl 	-R .iwram_bss12 -R .iwram_bss13 -R .iwram_bss14 -R .iwram_bss15 \\
+dnl 	-R .sram0 -R .sram1 -R .sram2 -R .sram3 -R .sram4 -R .sram5 -R .sram6 -R .sram7 \\
+dnl 	-R .sram8 -R .sram9 -R .sram10 -R .sram11 -R .sram12 -R .sram13 -R .sram14 -R .sram15 \\
+dnl 	$(PROJ).elf $(PROJ).gba
+dnl 	./do_gbafix.sh
+dnl #else
+dnl 	$(LD) $(OFILES) -o $(PROJ) $(LD_FLAGS)
+dnl #endif
+dnl #else
+dnl MODIFED_GENERATED_SOURCES:=
+dnl FINAL_GENERATED_SOURCES:=src/gen_src/$(GRAMMAR_PREFIX)Parser.h
+dnl GENERATED_SOURCES:=$(MODIFED_GENERATED_SOURCES) \\
+dnl 	$(FINAL_GENERATED_SOURCES)
+dnl 
+dnl all : all_pre $(MODIFED_GENERATED_SOURCES)
+dnl 	@make -j$(NUM_JOBS) final_generated
+dnl 
+dnl final_generated : all_pre $(FINAL_GENERATED_SOURCES)
+dnl 	@make -j$(NUM_JOBS) non_generated
+dnl 
+dnl non_generated : all_pre $(OFILES)
+dnl 	$(LD) $(OFILES) -o $(PROJ) $(LD_FLAGS)
+dnl #endif
+dnl 
+dnl # all_objs is ENTIRELY optional.
+dnl all_objs : all_pre $(OFILES)
+dnl 	@#
+dnl 
