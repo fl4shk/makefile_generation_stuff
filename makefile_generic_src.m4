@@ -109,7 +109,7 @@ ifdef(`DO_EMBEDDED', `_INCR(`NUM_MISC_BUILD_TYPES')'dnl
 dnl
 `_ARRSET(`ARR_MISC_BUILD_TYPES', NUM_MISC_BUILD_TYPES(), `bin')'dnl
 `_ARRSET(`ARR_MISC_BUILD_PREFIXES', NUM_MISC_BUILD_TYPES(), `BIN_')'dnl
-`_ARRSET(`ARR_MISC_BUILD_EXTRA_PREFIXES', NUM_MISC_BUILD_TYPES(), `BINARY_')'dnl
+`_ARRSET(`ARR_MISC_BUILD_EXTRA_PREFIXES', NUM_MISC_BUILD_TYPES(), `BIN_')'dnl
 `_ARRSET(`ARR_MISC_BUILD_FILEEXTS', NUM_MISC_BUILD_TYPES(), `bin')'dnl
 dnl
 `_ARRSET(`ARR_ANY_BUILD_TYPES', NUM_ANY_BUILD_TYPES(), `bin')'dnl
@@ -246,18 +246,20 @@ dnl
 ifdef(`DO_ARM', `EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi -mtune=arm7tdmi -mthumb \'
 `	-mthumb-interwork \'
 `	'__EXTRA_BASE_FLAGS()
-
+`'
 `EXTRA_LD_FLAGS:=$(EXTRA_LD_FLAGS) -mthumb --specs=nosys.specs \'
 `	'__EXTRA_LD_FLAGS()
-ifdef(`DO_GBA', `COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -L$(DEVKITPRO)/libgba/lib \'
+`ifdef(`DO_GBA',
+`COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -L$(DEVKITPRO)/libgba/lib \'
 `	-Wl,--entry=_start2 -lmm'
 ,
-
-`')dnl
-ifdef(`HAVE_DISASSEMBLE', `DISASSEMBLE_BASE_FLAGS:=-marm7tdmi'
-
+`')'dnl
+`ifdef(`HAVE_DISASSEMBLE', `DISASSEMBLE_BASE_FLAGS:=-marm7tdmi'
 ,
-`'))dnl
+`')'dnl
+,
+`')dnl
+
 
 FINAL_BASE_FLAGS:=$(OPTIMIZATION_LEVEL) \
 	$(EXTRA_BASE_FLAGS) $(EXTRA_DEBUG_FLAGS)
@@ -287,9 +289,14 @@ ifdef(`HAVE_ONLY_PREPROCESS', `PREPROCDIR:=preprocs$(DEBUG_SUFFIX)'
 ,
 `')dnl
 
+
 _FOR(`i', 1, NUM_MISC_BUILD_TYPES(), 
 `_GEN_SOURCES(GET_MISC_BUILD_PREFIX(i()), GET_MISC_BUILD_EXTRA_PREFIX(i()),
-GET_MISC_BUILD_FILEEXT(i()))')
+GET_MISC_BUILD_FILEEXT(i()))'
+`_GEN_OTHER_FILES(GET_MISC_BUILD_PREFIX(i()), `OFILES',
+GET_MISC_BUILD_FILEEXT(i()), `OBJDIR', `o')'
+`_GEN_OTHER_FILES(GET_MISC_BUILD_PREFIX(i()), `PFILES',
+GET_MISC_BUILD_FILEEXT(i()), `DEPDIR', `P')')
 
 _FOR(`i', 1, NUM_HLL_BUILD_TYPES(), 
 `_GEN_SOURCES(GET_HLL_BUILD_PREFIX(i()), GET_HLL_BUILD_EXTRA_PREFIX(i()),
@@ -372,7 +379,7 @@ ifdef(`DO_GBA', `$(LD) $(OBJDIR)/*.o -o $(PROJ).elf $(LD_FLAGS) -Wl,-M > linker_
 `.PHONY : non_generated'
 `non_generated : all_pre $(OFILES)'
 `	$(LD) $(OFILES) -o $(PROJ) $(LD_FLAGS)'
-)dnl
+)
 
 
 # all_objs is ENTIRELY optional
