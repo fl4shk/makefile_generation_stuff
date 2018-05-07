@@ -22,6 +22,7 @@ define(`GET_NON_HLL_BUILD_TYPE', `_ARRGET(`ARR_NON_HLL_BUILD_TYPES', $1)')dnl
 define(`GET_NON_HLL_BUILD_PREFIX', `_ARRGET(`ARR_NON_HLL_BUILD_PREFIXES', $1)')dnl
 define(`GET_NON_HLL_BUILD_EXTRA_PREFIX', `_ARRGET(`ARR_NON_HLL_BUILD_EXTRA_PREFIXES', $1)')dnl
 define(`GET_NON_HLL_BUILD_FILEEXT', `_ARRGET(`ARR_NON_HLL_BUILD_FILEEXTS', $1)')dnl
+define(`GET_NON_HLL_BUILD_ASSEMBLER', `_ARRGET(`ARR_NON_HLL_BUILD_ASSEMBLERS', $1)')dnl
 dnl
 define(`GET_MISC_BUILD_TYPE', `_ARRGET(`ARR_MISC_BUILD_TYPES', $1)')dnl
 define(`GET_MISC_BUILD_PREFIX', `_ARRGET(`ARR_MISC_BUILD_PREFIXES', $1)')dnl
@@ -66,12 +67,12 @@ dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_PREFIXES', NUM_NON_HLL_BUILD_TYPES(), `S_')'dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_EXTRA_PREFIXES', NUM_NON_HLL_BUILD_TYPES(), `S_')'dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_FILEEXTS', NUM_NON_HLL_BUILD_TYPES(), `s')'dnl
-dnl
-`_ARRSET(`MAP_NON_HLL_BUILD_TYPES', `asm', `as')'dnl
-`_ARRSET(`MAP_NON_HLL_BUILD_PREFIXES', `asm', `S_')'dnl
-`_ARRSET(`MAP_NON_HLL_BUILD_EXTRA_PREFIXES', `asm', `S_')'dnl
-`_ARRSET(`MAP_NON_HLL_BUILD_FILEEXTS', `asm', `s')'dnl
-`_ARRSET(`MAP_NON_HLL_BUILD_ASSEMBLERS', `asm', `AS')'dnl
+dnl hash table type stuff
+`_ARRSET(`ARR_NON_HLL_BUILD_TYPES', `asm', `as')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_PREFIXES', `asm', `S_')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_EXTRA_PREFIXES', `asm', `S_')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_FILEEXTS', `asm', `s')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_ASSEMBLERS', `asm', `AS')'dnl
 dnl
 `_ARRSET(`ARR_ANY_BUILD_TYPES', NUM_ANY_BUILD_TYPES(), `as')'dnl
 `_ARRSET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES(), `S_')')dnl
@@ -84,12 +85,12 @@ dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_PREFIXES', NUM_NON_HLL_BUILD_TYPES(), `NS_')'dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_EXTRA_PREFIXES', NUM_NON_HLL_BUILD_TYPES(), `NS_')'dnl
 `_ARRSET(`ARR_NON_HLL_BUILD_FILEEXTS', NUM_NON_HLL_BUILD_TYPES(), `nasm')'dnl
-dnl
-`_ARRSET(`MAP_NON_HLL_BUILD_TYPES', `nasm', `nasm')'dnl
-`_ARRSET(`MAP_NON_HLL_BUILD_PREFIXES', `nasm', `NS_')'dnl
-`_ARRSET(`MAP_NON_HLL_BUILD_EXTRA_PREFIXES', `nasm', `NS_')'dnl
-`_ARRSET(`MAP_NON_HLL_BUILD_FILEEXTS', `nasm', `nasm')'dnl
-`_ARRSET(`MAP_NON_HLL_BUILD_ASSEMBLERS', `nasm', `nasm')'dnl
+dnl hash table type stuff
+`_ARRSET(`ARR_NON_HLL_BUILD_TYPES', `nasm', `nasm')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_PREFIXES', `nasm', `NS_')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_EXTRA_PREFIXES', `nasm', `NS_')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_FILEEXTS', `nasm', `nasm')'dnl
+`_ARRSET(`ARR_NON_HLL_BUILD_ASSEMBLERS', `nasm', `nasm')'dnl
 dnl
 `_ARRSET(`ARR_ANY_BUILD_TYPES', NUM_ANY_BUILD_TYPES(), `nasm')'dnl
 `_ARRSET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES(), `NS_')')dnl
@@ -277,9 +278,6 @@ DEPDIR:=deps$(DEBUG_SUFFIX)
 ifdef(`HAVE_ONLY_PREPROCESS', `PREPROCDIR:=preprocs$(DEBUG_SUFFIX)'
 ,
 `')dnl
-dnl ifdef(`DO_EMBEDDED', `_GEN_SOURCES(`BIN_',`BINARY_', `bin')'
-dnl ,
-dnl `')dnl
 
 _FOR(`i', 1, NUM_MISC_BUILD_TYPES(), 
 `_GEN_SOURCES(GET_MISC_BUILD_PREFIX(i()), GET_MISC_BUILD_EXTRA_PREFIX(i()),
@@ -393,6 +391,20 @@ ifelse(_IFNDEF(`ANTLR'), `all_pre :'
 	do \
 		mkdir -p $$(dirname $$pfile); \
 	done
+ifdef(`HAVE_DISASSEMBLE',
+`	@for asmout in $(ASMOUTS); \'
+`	do \'
+`		mkdir -p $$(dirname $$asmout); \'
+`	done'
+,
+`')dnl
+ifdef(`HAVE_ONLY_PREPROCESS',
+`	@for efile in $(EFILES); \'
+`	do \'
+`		mkdir -p $$(dirname $$efile); \'
+`	done'
+,
+`')dnl
 
 ifdef(`HAVE_DISASSEMBLE', `.PHONY : all_pre_asmout'
 `all_pre_asmout :'
@@ -412,9 +424,82 @@ ifdef(`DO_GBA', `$(BIN_OFILES) : $(OBJDIR)/%.o : %.bin'
 ,
 `')dnl
 
-# Here's where things get really messy.
+# Here's where things get really messy. 
+dnl (especially in the .m4 source file!)
 _FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),OFILES)) : $(OBJDIR)/%.o : %.GET_HLL_BUILD_FILEEXT(i())'
 `	@echo $@" was updated or has no object file.  (Re)Compiling...."'
 `	'`$(GET_HLL_BUILD_COMPILER(i()))' $(`_CONCAT(GET_HLL_BUILD_PREFIX(i()),FLAGS)')` -MMD -c $< -o $@'
 `	undivert(include/compile_last_part.txt)'
 )
+ifdef(`DO_S', `$(_CONCAT(GET_NON_HLL_BUILD_PREFIX(`asm'),OFILES)) : $(OBJDIR)/%.o : %.GET_NON_HLL_BUILD_FILEEXT(`asm')'
+`	@echo $@" was updated or has no object file.  (Re)Assembling...."'
+`	'`$(GET_NON_HLL_BUILD_ASSEMBLER(`asm'))' $(`_CONCAT(GET_NON_HLL_BUILD_PREFIX(`asm'),FLAGS)')` -MD -c $< -o $@'
+`	undivert(include/compile_last_part.txt)'
+,
+`')dnl
+
+ifdef(`HAVE_DISASSEMBLE', `undivert(include/here_we_have_stuff_for_outputting_assembly_source_code.txt)',
+`')dnl
+dnl
+ifdef(`HAVE_DISASSEMBLE', `_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),ASMOUTS)) : $(ASMOUTDIR)/%.s : %.GET_HLL_BUILD_FILEEXT(i())'
+`	@echo $@" was updated or has no object file.  (Re)Compiling...."'
+`	'`$(GET_HLL_BUILD_COMPILER(i()))' $(`_CONCAT(GET_HLL_BUILD_PREFIX(i()),FLAGS)')` -MMD -S $< -o $@'
+`	undivert(include/compile_last_part.txt)'
+)'
+,
+`')dnl
+
+-include $(PFILES)
+
+#¯\(°_o)/¯
+
+ifdef(`HAVE_ONLY_PREPROCESS', `.PHONY : only_preprocess'
+`only_preprocess : only_preprocess_pre $(EFILES)'
+`	@#'
+`'
+`.PHONY : only_preprocess_pre'
+`only_preprocess_pre : '
+`	mkdir -p $(DEPDIR) $(PREPROCDIR)'
+`'
+`'
+`_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),EFILES)) : $(ASMOUTDIR)/%.s : %.GET_HLL_BUILD_FILEEXT(i())'
+`	'`$(GET_HLL_BUILD_COMPILER(i()))' $(`_CONCAT(GET_HLL_BUILD_PREFIX(i()),FLAGS)')` -MMD -E $< -o $@'
+`	undivert(include/compile_last_part.txt)'
+)'
+,
+`')dnl
+
+.PHONY : clean
+clean :
+ifelse(_IFNDEF(`ANTLR'), 
+`	rm -rfv $(OBJDIR) $(DEPDIR) $(ASMOUTDIR) $(PREPROCDIR) $(PROJ) tags *.taghl gmon.out',
+_IFDEF(`ANTLR'), 
+`	rm -rfv $(OBJDIR) $(DEPDIR) $(ASMOUTDIR) $(PREPROCDIR) $(PROJ) tags *.taghl gmon.out $(GENERATED_SOURCES) src/gen_src')
+
+
+ifdef(`HAVE_DISASSEMBLE',
+`# Flags for make disassemble*'
+`DISASSEMBLE_FLAGS:=$(DISASSEMBLE_BASE_FLAGS) -C -d '
+`DISASSEMBLE_ALL_FLAGS:=$(DISASSEMBLE_BASE_FLAGS) -C -D '
+`'
+`DISASSEMBLE_2_FLAGS:=$(DISASSEMBLE_BASE_FLAGS) -C -S -l -d '
+`DISASSEMBLE_ALL_2_FLAGS:=$(DISASSEMBLE_BASE_FLAGS) -C -S -l -D '
+`'
+`.PHONY : disassemble'
+`disassemble :'
+`	$(OBJDUMP) $(DISASSEMBLE_FLAGS) $(PROJ)'
+`'
+`.PHONY : disassemble_all'
+`disassemble_all :'
+`	$(OBJDUMP) $(DISASSEMBLE_ALL_FLAGS) $(PROJ)'
+`'
+`'
+`.PHONY : disassemble_2'
+`disassemble_2 :'
+`	$(OBJDUMP) $(DISASSEMBLE_2_FLAGS) $(PROJ)'
+`'
+`.PHONY : disassemble_all_2'
+`disassemble_all_2 :'
+`	$(OBJDUMP) $(DISASSEMBLE_ALL_2_FLAGS) $(PROJ)'
+,
+`')dnl
