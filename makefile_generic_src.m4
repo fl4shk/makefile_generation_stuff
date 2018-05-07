@@ -165,4 +165,32 @@ ifdef(`ANTLR',
 ifdef(`JSONCPP',
 `	-ljsoncpp \')
 )
+
+
+ifdef DEBUG
+	EXTRA_DEBUG_FLAGS:=-g
+	DEBUG_FLAGS:=-gdwarf-3 $(EXTRA_DEBUG_FLAGS)
+	EXTRA_LD_FLAGS:=$(DEBUG_FLAGS)
+	OPTIMIZATION_LEVEL:=$(DEBUG_OPTIMIZATION_LEVEL)
+else
+	OPTIMIZATION_LEVEL:=$(REGULAR_OPTIMIZATION_LEVEL)
+endif
+
+
+dnl #ifdef DO_EMBEDDED
+dnl LD_SCRIPT:=linkscript.ld
+dnl COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -T $(LD_SCRIPT) 
+dnl #endif
+ifdef(`DO_EMBEDDED', `LD_SCRIPT:=linkscript.ld'
+`COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -T $(LD_SCRIPT)'
+,
+`')dnl
+dnl #ifdef DO_NON_X86
+dnl #define __extra_base_flags -fno-threadsafe-statics -nostartfiles
+dnl #define __extra_ld_flags -lm -lgcc -lc -lstdc++
+dnl #endif
+ifdef(`DO_NON_X86', `define(`__EXTRA_BASE_FLAGS', `-fno-threadsafe-statics -nostartfiles')'`define(`__EXTRA_LD_FLAGS', `-lm -lgcc -lc -lstdc++')'
+
+,
+`')dnl
 aaa
