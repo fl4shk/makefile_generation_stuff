@@ -85,23 +85,15 @@ define(`__INITIAL_BASE_FLAGS', `-Wall')dnl
 ifdef(`HAVE_DISASSEMBLE', 
 `undivert(include/this_is_used_for_do_asmouts.txt)',
 `')`'dnl
-
-
-ifelse(_IFDEF(`DO_GBA'), `PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-',
-	_IFDEF(`DO_ARM'), `PREFIX:=arm-none-eabi-')`'dnl
+dnl
+dnl
+ifelse(_IFDEF(`DO_GBA'), `PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-'
+,
+_IFDEF(`DO_ARM'), `PREFIX:=arm-none-eabi-'
+,
+`')`'dnl
 
 # Compilers and initial compiler flags
-dnl #ifdef DO_CXX
-dnl CXX:=$(PREFIX)g++
-dnl #ifndef JSONCPP
-dnl CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 __INITIAL_BASE_FLAGS
-dnl #else
-dnl CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 __INITIAL_BASE_FLAGS \\
-dnl 	$(shell pkg-config --cflags jsoncpp)
-dnl #endif
-dnl #else
-dnl 
-dnl #endif
 ifdef(`DO_CXX', `CXX:=$(PREFIX)g++'
 ifelse(_IFNDEF(`JSONCPP'),
 `CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 '__INITIAL_BASE_FLAGS()
@@ -112,13 +104,8 @@ _IFDEF(`JSONCPP'),
 	`$(shell pkg-config --cflags jsoncpp)'
 
 ))`'dnl
-dnl #if (defined(DO_C) || !defined(DO_CXX))
-dnl CC:=$(PREFIX)gcc
-dnl #endif
-dnl #ifdef DO_C
-dnl C_FLAGS:=$(C_FLAGS) -std=c11 __INITIAL_BASE_FLAGS
-dnl 
-dnl #endif
+dnl
+dnl
 ifelse(_IFDEF(`DO_C'), `CC:=$(PREFIX)gcc'
 ,
 _IFNDEF(`DO_CXX'), `CC:=$(PREFIX)gcc'
@@ -126,21 +113,17 @@ _IFNDEF(`DO_CXX'), `CC:=$(PREFIX)gcc'
 ifdef(`DO_C', `C_FLAGS:=$(C_FLAGS) -std=c11 '__INITIAL_BASE_FLAGS()
 
 )`'dnl
-dnl #ifdef DO_S
-dnl AS:=$(PREFIX)as
-dnl #ifndef DO_NON_X86
-dnl S_FLAGS:=$(S_FLAGS) -mnaked-reg #-msyntax=intel
-dnl #endif
+dnl
+dnl
 ifdef(`DO_S', `AS:=$(PREFIX)as'
-,
-`')`'dnl
-ifdef(`DO_S',
 `ifelse(_IFNDEF(`DO_NON_X86'), `undivert(include/s_flags.txt)')'
 ,
 `')`'dnl
+dnl
+dnl
+ifdef(`DO_NS', `NS:=nasm'
+`NS_FLAGS:=$(NS_FLAGS) -f elf64'
+
+,
+`')`'dnl
 aaa
-dnl 
-dnl #endif
-dnl #ifdef DO_NS
-dnl NS:=nasm
-dnl NS_FLAGS:=$(NS_FLAGS) -f elf64
