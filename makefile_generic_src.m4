@@ -138,8 +138,7 @@ _FOR(`i', 1, NUM_ANY_BUILD_TYPES(), `_CONCAT(`GET_ANY_BUILD_PREFIX(i())',`DIRS')
 DEBUG_OPTIMIZATION_LEVEL:=-O0
 REGULAR_OPTIMIZATION_LEVEL:=-O2
 
-ifdef(`ANTLR', `NUM_JOBS:=8
-GRAMMAR_PREFIX:=Grammar'
+ifdef(`ANTLR', `GRAMMAR_PREFIX:=Grammar'
 , `')dnl
 
 ALWAYS_DEBUG_SUFFIX:=_debug
@@ -370,11 +369,11 @@ ifdef(`DO_GBA', `$(LD) $(OBJDIR)/*.o -o $(PROJ).elf $(LD_FLAGS) -Wl,-M > linker_
 `'
 `.PHONY : all'
 `all : all_pre $(MODIFED_GENERATED_SOURCES)'
-`	@make -j$(NUM_JOBS) final_generated'
+`	@$(MAKE) final_generated'
 `'
 `.PHONY : final_generated'
 `final_generated : all_pre $(FINAL_GENERATED_SOURCES)'
-`	@make -j$(NUM_JOBS) non_generated'
+`	@$(MAKE) non_generated'
 `'
 `.PHONY : non_generated'
 `non_generated : all_pre $(OFILES)'
