@@ -1,8 +1,10 @@
-ifelse(ifdef(`ANTLR', 1, 0), 1, `define(`GENERIC')',ifdef(`JSONCPP', 1, 0), 1, `define(`GENERIC')')dnl
+dnl ifelse(_IFDEF(`ANTLR'), `define(`GENERIC')',_IFDEF(`JSONCPP'), `define(`GENERIC')')dnl
+dnl ifelse(_IFDEF(`ANTLR'), `define(`DO_CXX')',_IFDEF(`JSONCPP'), `define(`GENERIC')')dnl
+ifelse(STATUS_ANTLR_JSONCPP(), `neither', `', `define(`DO_CXX')define(`HAVE_ONLY_PREPROCESS')')dnl
 dnl
 dnl
 ifdef(`GENERIC',`define(`DO_CXX')'`define(`DO_C')'`define(`DO_S')'dnl
-`define(`DO_NS')'`define(`HAVE_DISASSEMBLE')'`define(`HAVE_ONLY_PREPROCESS')'`define(`HAVE_DEBUG')')dnl
+`define(`DO_NS')'`define(`HAVE_DISASSEMBLE')'`define(`HAVE_ONLY_PREPROCESS')')dnl
 dnl
 dnl
 ifdef(`DO_GBA',`define(`DO_CXX')'`define(`DO_ARM')')dnl

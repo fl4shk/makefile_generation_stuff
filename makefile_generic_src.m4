@@ -1,3 +1,5 @@
+define(`STATUS_ANTLR_JSONCPP', ifdef(`ANTLR', ifdef(`JSONCPP', `both', `just_antlr'), ifdef(`JSONCPP', `just_jsoncpp', `neither')))dnl
+dnl
 include(include/misc_defines.m4)dnl
 include(include/generic.m4)dnl
 # These directories specify where source code files are located.
@@ -115,8 +117,6 @@ dnl
 `_ARRSET(`ARR_ANY_BUILD_TYPES', NUM_ANY_BUILD_TYPES(), `bin')'dnl
 `_ARRSET(`ARR_ANY_BUILD_PREFIXES', NUM_ANY_BUILD_TYPES(), `BIN_')')dnl
 dnl
-dnl
-define(`STATUS_ANTLR_JSONCPP', ifdef(`ANTLR', ifdef(`JSONCPP', `both', `just_antlr'), ifdef(`JSONCPP', `just_jsoncpp', `neither')))dnl
 dnl
 ifelse(STATUS_ANTLR_JSONCPP(), `both', `SHARED_SRC_DIRS:=src \
 	src/gen_src \
@@ -461,14 +461,14 @@ ifdef(`HAVE_DISASSEMBLE', `_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HL
 
 ifdef(`HAVE_ONLY_PREPROCESS', `.PHONY : only_preprocess'
 `only_preprocess : only_preprocess_pre $(EFILES)'
-`	@for efile in $(EFILES); \'
-`	do \'
-`		mkdir -p $$(dirname $$efile); \'
-`	done'
 `'
 `.PHONY : only_preprocess_pre'
 `only_preprocess_pre :'
 `	mkdir -p $(DEPDIR) $(PREPROCDIR)'
+`	@for efile in $(EFILES); \'
+`	do \'
+`		mkdir -p $$(dirname $$efile); \'
+`	done'
 `'
 `'
 `_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),EFILES)) : $(PREPROCDIR)/%.E : %.GET_HLL_BUILD_FILEEXT(i())'
