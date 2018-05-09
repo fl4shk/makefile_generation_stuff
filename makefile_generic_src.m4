@@ -406,24 +406,16 @@ ifelse(_IFNDEF(`ANTLR'), `all_pre :'
 	do \
 		mkdir -p $$(dirname $$pfile); \
 	done
-ifdef(`HAVE_DISASSEMBLE',
-`	@for asmout in $(ASMOUTS); \'
-`	do \'
-`		mkdir -p $$(dirname $$asmout); \'
-`	done'
-,
-`')dnl
-ifdef(`HAVE_ONLY_PREPROCESS',
-`	@for efile in $(EFILES); \'
-`	do \'
-`		mkdir -p $$(dirname $$efile); \'
-`	done'
-,
-`')dnl
+
+
 
 ifdef(`HAVE_DISASSEMBLE', `.PHONY : all_pre_asmout'
 `all_pre_asmout :'
 `	mkdir -p $(ASMOUTDIR)'
+`	@for asmout in $(ASMOUTS); \'
+`	do \'
+`		mkdir -p $$(dirname $$asmout); \'
+`	done'
 ,
 `')dnl
 
@@ -469,7 +461,10 @@ ifdef(`HAVE_DISASSEMBLE', `_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HL
 
 ifdef(`HAVE_ONLY_PREPROCESS', `.PHONY : only_preprocess'
 `only_preprocess : only_preprocess_pre $(EFILES)'
-`	@#'
+`	@for efile in $(EFILES); \'
+`	do \'
+`		mkdir -p $$(dirname $$efile); \'
+`	done'
 `'
 `.PHONY : only_preprocess_pre'
 `only_preprocess_pre :'
