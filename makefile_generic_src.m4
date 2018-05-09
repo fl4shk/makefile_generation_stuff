@@ -418,7 +418,11 @@ ifdef(`HAVE_DISASSEMBLE', `.PHONY : all_pre_asmout'
 ,
 `')dnl
 
-ifdef(`ANTLR', `src/gen_src/$(GRAMMAR_PREFIX)Parser.h : src/$(GRAMMAR_PREFIX).g4'
+ifdef(`ANTLR', `.PHONY : grammar_stuff'
+`grammar_stuff : src/gen_src/$(GRAMMAR_PREFIX)Parser.h \'
+`	@#'
+`'
+`src/gen_src/$(GRAMMAR_PREFIX)Parser.h : src/$(GRAMMAR_PREFIX).g4'
 `	if [ ! -d src/gen_src ]; then make all_pre; fi; \'
 `	cp src/$(GRAMMAR_PREFIX).g4 src/gen_src && cd src/gen_src \'
 `	&& antlr4 -no-listener -visitor -Dlanguage=Cpp $(GRAMMAR_PREFIX).g4 \'
