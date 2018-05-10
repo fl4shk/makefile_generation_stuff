@@ -1,3 +1,4 @@
+changecom()dnl
 define(`_BACKTICK',`changequote(<,>)`dnl'
 changequote`'')dnl
 dnl

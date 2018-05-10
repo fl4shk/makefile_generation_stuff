@@ -1,0 +1,1 @@
+"Reminder:  With Icarus Verilog, DON'T CAST BITS TO ENUMS!"
