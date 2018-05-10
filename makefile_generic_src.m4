@@ -337,7 +337,8 @@ ifdef(`HAVE_DISASSEMBLE', ASMOUTS:=MAKE_LIST_OF_HLL_GENERATED_FILES(`ASMOUTS')
 ,
 `')dnl
 
-ifdef(`HAVE_ONLY_PREPROCESS', `# Preprocessed output of C++ and/or C files',
+ifdef(`HAVE_ONLY_PREPROCESS', `# Preprocessed output of C++ and/or C files'
+,
 `')dnl
 ifdef(`HAVE_ONLY_PREPROCESS', _FOR(`i', 1, NUM_HLL_BUILD_TYPES(), 
 `_GEN_OTHER_FILES(GET_HLL_BUILD_PREFIX(i()), `EFILES',
