@@ -69,22 +69,22 @@ WHICH_HDL(), `systemverilog', `M4_SRC_FILES := '`_GEN_RHS_SOURCES(`SRC_',`src.sv
 `')dnl
 
 .PHONY : all
-ifelse(_IFELSEDEF(`HAVE_M4'), 0, `all: reminder clean',
-`all: all_pre reminder clean')
+ifelse(_IFELSEDEF(`HAVE_M4'), 0, `all: clean reminder',
+`all: clean reminder all_pre $(PKG_FILES) $(SRC_FILES)')
 	$(BUILD_VVP) $(PKG_FILES) $(SRC_FILES)
 	@#$(BUILD_VHDL) $(PKG_FILES) $(SRC_FILES)
 
 .PHONY : only_preprocess
-ifelse(_IFELSEDEF(`HAVE_M4'), 0, `only_preprocess: reminder clean',
-`only_preprocess: all_pre reminder clean')
+ifelse(_IFELSEDEF(`HAVE_M4'), 0, `only_preprocess: clean reminder',
+`only_preprocess: clean reminder all_pre $(PKG_FILES) $(SRC_FILES)')
 	$(PREPROCESS) $(PKG_FILES) $(SRC_FILES)
 
 ifelse(_IFELSEDEF(`HAVE_M4'), 1, `.PHONY : all_pre
-all_pre : $(PKG_FILES) $(SRC_FILES)'
+all_pre :'
 ifelse(WHICH_HDL(), `verilog', `	mkdir -p $(V_OUT_DIR)
 	_GEN_OUTPUT_DIRECTORIES(`src_file',`SRC_FILES')
 
-$(SRC_FILES) : $(V_OUT_DIR)/%.src.v : $.src.v.m4
+$(SRC_FILES) : $(V_OUT_DIR)/%.src.v : %.src.v.m4
 	m4 $< > $@'
 ,
 WHICH_HDL(), `systemverilog', `	mkdir -p $(SV_OUT_DIR)
@@ -108,7 +108,7 @@ ifelse(WHICH_HDL(), `verilog', `	@#'
 WHICH_HDL(), `systemverilog', `	@echo undivert(include_hdl/reminder_systemverilog.txt)',
 `')dnl
 
-define(`BASIC_CLEAN', `rm -fv $(PROJ).vvp $(PROJ).vhd $(PROJ).E')dnl
+define(`BASIC_CLEAN', `rm -rfv $(PROJ).vvp $(PROJ).vhd $(PROJ).E')dnl
 .PHONY : clean
 clean:  
 ifelse(_IFELSEDEF(`HAVE_M4'), 0,
