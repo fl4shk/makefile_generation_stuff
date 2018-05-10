@@ -9,9 +9,9 @@ ifelse(_IFELSEDEF(`HAVE_M4'), 1,
 	_IFELSEDEF(`HAVE_M4'), 0, 
 	`ifelse(WHICH_HDL(), `verilog', `define(`WHICH_MAKEFILE', `just_verilog')',
 	`define(`WHICH_MAKEFILE', `just_systemverilog')')')dnl
-# WHICH_HDL()
-# WHICH_MAKEFILE()
-
+dnl # WHICH_HDL()
+dnl # WHICH_MAKEFILE()
+dnl 
 # start stuff
 
 # Edit these variables if more directories are needed.
@@ -26,24 +26,19 @@ PROJ := $(shell basename$(CURDIR))
 VC=iverilog
 
 
-ifdef(`DO_VERILOG', `BUILD_VVP=$(VC) -o $(PROJ).vvp
+ifelse(WHICH_HDL(), `verilog', `BUILD_VVP=$(VC) -o $(PROJ).vvp
 #BUILD_VHDL=$(VC) -tvhdl -o $(PROJ).vhd
 PREPROCESS=$(VC) -E -o $(PROJ).E'
 ,
-`')dnl
-ifdef(`DO_SYSTEMVERILOG', `BUILD_VVP=$(VC) -g2009 -o $(PROJ).vvp
+WHICH_HDL(), `systemverilog', `BUILD_VVP=$(VC) -g2009 -o $(PROJ).vvp
 #BUILD_VHDL=$(VC) -g2009 -tvhdl -o $(PROJ).vhd
 PREPROCESS=$(VC) -g2009 -E -o $(PROJ).E'
 ,
 `')dnl
 
-dnl _GEN_SOURCES(`CXX_',`EGG_',`DRAKE')
-dnl _ARRSET(`__arr_verilog_no_m4_stuff', `egg', )
-
-ifdef(`DO_VERILOG', `SRC_FILES := '`_GEN_RHS_SOURCES(`SRC_',`src.v')'
+ifelse(WHICH_HDL(), `verilog', `SRC_FILES := '`_GEN_RHS_SOURCES(`SRC_',`src.v')'
 ,
-`')dnl
-ifdef(`DO_SYSTEMVERILOG', `PKG_FILES := '`_GEN_RHS_SOURCES(`PKG_',`pkg.sv')'
+WHICH_HDL(), `systemverilog', `PKG_FILES := '`_GEN_RHS_SOURCES(`PKG_',`pkg.sv')'
 `SRC_FILES := '`_GEN_RHS_SOURCES(`SRC_',`src.sv')'
 ,
 `')dnl
