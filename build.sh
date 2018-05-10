@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Regular (software) makefiles
-regular_src=makefile_generic_src.m4
+regular_src=GNUmakefile_generic_src.m4
 mkdir -p generic
 mkdir -p C++
 mkdir -p C
@@ -31,7 +31,7 @@ m4 -DDO_C -DDO_ARM -DHAVE_DEBUG -DDO_S -DHAVE_DISASSEMBLE ${regular_src} > C/GNU
 m4 -DDO_GBA ${regular_src} > C++/GNUmakefile_gba.mk
 
 # HDL (Icarus Verilog) makefiles
-hdl_src=makefile_icarus_verilog_generic_src.m4
+hdl_src=GNUmakefile_icarus_verilog_generic_src.m4
 mkdir -p HDL
 
 m4 -DDO_VERILOG ${hdl_src} > HDL/GNUmakefile_v_icarus_verilog.mk
