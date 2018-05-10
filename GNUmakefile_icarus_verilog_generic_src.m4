@@ -21,7 +21,7 @@ SRC_DIRS := src
 #end stuff
 
 # Prefix for output file name (change this if needed!)
-PROJ := $(shell basename$(CURDIR))
+PROJ := $(shell basename $(CURDIR))
 
 # (System)Verilog Compiler
 VC=iverilog
