@@ -13,14 +13,14 @@ PROJ := $(shell basename$(CURDIR))
 VC=iverilog
 
 
-ifdef(`DO_VERILOG', `BUILD_VVP=$(VC) -g2009 -o $(PROJ).vvp
-#BUILD_VHDL=$(VC) -g2009 -tvhdl -o $(PROJ).vhd
-PREPROCESS=$(VC) -g2009 -E -o $(PROJ).E'
-,
-`')dnl
-ifdef(`DO_SYSTEMVERILOG', `BUILD_VVP=$(VC) -o $(PROJ).vvp
+ifdef(`DO_VERILOG', `BUILD_VVP=$(VC) -o $(PROJ).vvp
 #BUILD_VHDL=$(VC) -tvhdl -o $(PROJ).vhd
 PREPROCESS=$(VC) -E -o $(PROJ).E'
+,
+`')dnl
+ifdef(`DO_SYSTEMVERILOG', `BUILD_VVP=$(VC) -g2009 -o $(PROJ).vvp
+#BUILD_VHDL=$(VC) -g2009 -tvhdl -o $(PROJ).vhd
+PREPROCESS=$(VC) -g2009 -E -o $(PROJ).E'
 ,
 `')dnl
 
