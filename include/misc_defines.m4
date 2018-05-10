@@ -24,7 +24,9 @@ define(`_GEN_RHS_SOURCES', `$(foreach DIR,$('`$1'`DIRS),$(wildcard $(DIR)/*.'`$2
 dnl define(`_GEN_SOURCES', `_CONCAT(`$1',`SOURCES')` := _GEN_RHS_SOURCES(`$2',`$3')'')dnl
 define(`_GEN_SOURCES', `_CONCAT(`$1',`SOURCES')'` := '`_GEN_RHS_SOURCES(`$2',`$3')')dnl
 dnl CXX_OFILES:=$(CXX_SOURCES:%.cpp=$(OBJDIR)/%.o) 
-define(`_GEN_OTHER_FILES', _CONCAT($1,$2)` := '$(_CONCAT($1,SOURCES):%.$3=$($4)/%.$5))dnl
+define(`_GEN_RHS_OTHER_FILES', `$(_CONCAT(`$1',`$2'):%.`$3'=$(`$4')/%.`$5')')dnl
+dnl define(`_GEN_OTHER_FILES', _CONCAT($1,$2)` := '$(_CONCAT($1,SOURCES):%.$3=$($4)/%.$5))dnl
+define(`_GEN_OTHER_FILES', _CONCAT($1,$2)` := '`_GEN_RHS_OTHER_FILES(`$1',`SOURCES',`$3',`$4',`$5')')dnl
 define(`_GEN_OUTPUT_DIRECTORIES', `@for `$1' in $(`$2'); \
 	do \
 		mkdir -p $$(dirname $$`$1'); \
