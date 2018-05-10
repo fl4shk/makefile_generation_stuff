@@ -5,16 +5,17 @@ SRCDIRS		:=	$(CURDIR) src src/cpu src/testing
 
 # end stuff
 
+# Prefix for output file name
 PROJ=$(shell basename $(CURDIR))
 
-# Verilog Compiler
+# (System)Verilog Compiler
 VC=iverilog
 
 
 #BUILD=$(VC) -o $(PROJ).vvp
 #BUILD=$(VC) -g2005-sv -o $(PROJ).vvp
 BUILD_VVP=$(VC) -o $(PROJ).vvp
-BUILD_VHDL=$(VC) -tvhdl -o $(PROJ).vhd
+#BUILD_VHDL=$(VC) -tvhdl -o $(PROJ).vhd
 PREPROCESS=$(VC) -E -o $(PROJ).E
 
 
@@ -30,6 +31,7 @@ PREPROCESS=$(VC) -E -o $(PROJ).E
 
 SRCFILES:=$(foreach DIR,$(SRCDIRS),$(wildcard $(DIR)/*.src.v))
 
+.PHONY : all
 all: reminder clean
 	$(BUILD_VVP) $(PKGFILES) $(SRCFILES)
 	@#$(BUILD_VHDL) $(PKGFILES) $(SRCFILES)
@@ -40,7 +42,7 @@ only_preprocess: reminder clean
 
 .PHONY : reminder
 reminder:
-	@echo "Reminder:  With Icarus Verilog, DON'T CAST BITS TO ENUMS!"
+	@#echo "Reminder:  With Icarus Verilog, DON'T CAST BITS TO ENUMS!"
 
 .PHONY : clean
 clean:  

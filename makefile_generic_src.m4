@@ -1,7 +1,7 @@
 define(`STATUS_ANTLR_JSONCPP', ifdef(`ANTLR', ifdef(`JSONCPP', `both', `just_antlr'), ifdef(`JSONCPP', `just_jsoncpp', `neither')))dnl
 dnl
 include(include/misc_defines.m4)dnl
-include(include/generic.m4)dnl
+include(include_regular/generic.m4)dnl
 # These directories specify where source code files are located.
 # Edit these variables if more directories are needed.  
 # Separate each entry by spaces.
@@ -151,7 +151,7 @@ PROJ:=$(shell basename $(CURDIR))$(DEBUG_SUFFIX)
 
 define(`__INITIAL_BASE_FLAGS', `-Wall')dnl
 ifdef(`HAVE_DISASSEMBLE', 
-`undivert(include/this_is_used_for_do_asmouts.txt)',
+`undivert(include_regular/this_is_used_for_do_asmouts.txt)',
 `')dnl
 dnl
 dnl
@@ -184,7 +184,7 @@ ifdef(`DO_C', `C_FLAGS:=$(C_FLAGS) -std=c11 '__INITIAL_BASE_FLAGS()
 dnl
 dnl
 ifdef(`DO_S', `AS:=$(PREFIX)as'
-`ifelse(_IFNDEF(`DO_NON_X86'), `undivert(include/s_flags.txt)')'
+`ifelse(_IFNDEF(`DO_NON_X86'), `undivert(include_regular/s_flags.txt)')'
 ,
 `')dnl
 dnl
@@ -306,7 +306,7 @@ GET_HLL_BUILD_FILEEXT(i()), `OBJDIR', `o')'
 GET_HLL_BUILD_FILEEXT(i()), `DEPDIR', `P')'
 `ifdef(`HAVE_DISASSEMBLE', 
 `'
-`undivert(include/assembly_source_code_generated_by_gcc_gplusplus.txt)'`_GEN_OTHER_FILES(GET_HLL_BUILD_PREFIX(i()), `ASMOUTS',
+`undivert(include_regular/assembly_source_code_generated_by_gcc_gplusplus.txt)'`_GEN_OTHER_FILES(GET_HLL_BUILD_PREFIX(i()), `ASMOUTS',
 GET_HLL_BUILD_FILEEXT(i()), `ASMOUTDIR', `s')'
 
 ,
@@ -335,7 +335,7 @@ ifdef(`HAVE_DISASSEMBLE', ASMOUTS:=MAKE_LIST_OF_HLL_GENERATED_FILES(`ASMOUTS')
 ,
 `')dnl
 
-ifdef(`HAVE_ONLY_PREPROCESS', `undivert(include/preprocessed_output_of_source_files.txt)',
+ifdef(`HAVE_ONLY_PREPROCESS', `undivert(include_regular/preprocessed_output_of_source_files.txt)',
 `')dnl
 ifdef(`HAVE_ONLY_PREPROCESS', _FOR(`i', 1, NUM_HLL_BUILD_TYPES(), 
 `_GEN_OTHER_FILES(GET_HLL_BUILD_PREFIX(i()), `EFILES',
@@ -346,39 +346,16 @@ ifdef(`HAVE_ONLY_PREPROCESS', EFILES:=MAKE_LIST_OF_HLL_GENERATED_FILES(`EFILES')
 ,
 `')dnl
 
-ifelse(_IFNDEF(`ANTLR'), `.PHONY : all'
-`all : all_pre $(OFILES)'
-ifdef(`DO_GBA', `$(LD) $(OBJDIR)/*.o -o $(PROJ).elf $(LD_FLAGS) -Wl,-M > linker_map.txt'
-	`$(OBJCOPY) -O binary -S -g -R .iwram -R .bss -R .ewram -R .sram \'
-	`-R .bss0 -R .bss1 -R .bss2 -R .bss3 -R .bss4 -R .bss5 -R .bss6 -R .bss7 \'
-	`-R .bss8 -R .bss9 -R .bss10 -R .bss11 -R .bss12 -R .bss13 -R .bss14 -R .bss15 \'
-	`-R .iwram_bss0 -R .iwram_bss1 -R .iwram_bss2 -R .iwram_bss3 \'
-	`-R .iwram_bss4 -R .iwram_bss5 -R .iwram_bss6 -R .iwram_bss7 \'
-	`-R .iwram_bss8 -R .iwram_bss9 -R .iwram_bss10 -R .iwram_bss11 \'
-	`-R .iwram_bss12 -R .iwram_bss13 -R .iwram_bss14 -R .iwram_bss15 \'
-	`-R .sram0 -R .sram1 -R .sram2 -R .sram3 -R .sram4 -R .sram5 -R .sram6 -R .sram7 \'
-	`-R .sram8 -R .sram9 -R .sram10 -R .sram11 -R .sram12 -R .sram13 -R .sram14 -R .sram15 \'
-	`$(PROJ).elf $(PROJ).gba'
-	`./do_gbafix.sh',
-	`$(LD) $(OFILES) -o $(PROJ) $(LD_FLAGS)'
-), _IFDEF(`ANTLR'), 
-`MODIFED_GENERATED_SOURCES:='
-`FINAL_GENERATED_SOURCES:=src/gen_src/$(GRAMMAR_PREFIX)Parser.h'
-`GENERATED_SOURCES:=$(MODIFED_GENERATED_SOURCES) \'
-`	$(FINAL_GENERATED_SOURCES)'
-`'
-`.PHONY : all'
-`all : all_pre $(MODIFED_GENERATED_SOURCES)'
-`	@$(MAKE) final_generated'
-`'
-`.PHONY : final_generated'
-`final_generated : all_pre $(FINAL_GENERATED_SOURCES)'
-`	@$(MAKE) non_generated'
-`'
-`.PHONY : non_generated'
-`non_generated : all_pre $(OFILES)'
-`	$(LD) $(OFILES) -o $(PROJ) $(LD_FLAGS)'
-)
+dnl
+dnl ifelse(_IFNDEF(`ANTLR'), `.PHONY : all
+dnl all : all_pre $(OFILES)' ifelse(_IFDEF(`DO_GBA'), `undivert(include_regular/finalize_gba.txt)', 
+dnl _IFNDEF(`DO_GBA'), `undivert(include_regular/finalize_regular.txt)'),
+dnl _IFDEF(`ANTLR'), `undivert(include_regular/finalize_antlr.txt)')dnl
+ifelse(_IFNDEF(`ANTLR'), `.PHONY : all
+all : all_pre $(OFILES)'
+`ifelse(_IFDEF(`DO_GBA'), `undivert(include_regular/finalize_gba.txt)',
+_IFNDEF(`DO_GBA'), `undivert(include_regular/finalize_regular.txt)')',
+_IFDEF(`ANTLR'), `undivert(include_regular/finalize_antlr.txt)')dnl
 
 
 # all_objs is ENTIRELY optional
@@ -439,21 +416,21 @@ dnl (especially in the .m4 source file!)
 _FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),OFILES)) : $(OBJDIR)/%.o : %.GET_HLL_BUILD_FILEEXT(i())'
 `	@echo $@" was updated or has no object file.  (Re)Compiling...."'
 `	'`$(GET_HLL_BUILD_COMPILER(i()))' $(`_CONCAT(GET_HLL_BUILD_PREFIX(i()),FLAGS)')` -MMD -c $< -o $@'
-`	undivert(include/compile_last_part.txt)'
+`	undivert(include_regular/compile_last_part.txt)'
 )
 ifdef(`DO_S', `$(_CONCAT(GET_NON_HLL_BUILD_PREFIX(`asm'),OFILES)) : $(OBJDIR)/%.o : %.GET_NON_HLL_BUILD_FILEEXT(`asm')'
 `	@echo $@" was updated or has no object file.  (Re)Assembling...."'
 `	'`$(GET_NON_HLL_BUILD_ASSEMBLER(`asm'))' $(`_CONCAT(GET_NON_HLL_BUILD_PREFIX(`asm'),FLAGS)')` -MD $(OBJDIR)/$*.d -c $< -o $@'
-`	undivert(include/compile_last_part.txt)'
+`	undivert(include_regular/compile_last_part.txt)'
 ,
 `')dnl
 
-ifdef(`HAVE_DISASSEMBLE', `undivert(include/here_we_have_stuff_for_outputting_assembly_source_code.txt)',
+ifdef(`HAVE_DISASSEMBLE', `undivert(include_regular/here_we_have_stuff_for_outputting_assembly_source_code.txt)',
 `')dnl
 dnl
 ifdef(`HAVE_DISASSEMBLE', `_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),ASMOUTS)) : $(ASMOUTDIR)/%.s : %.GET_HLL_BUILD_FILEEXT(i())'
 `	'`$(GET_HLL_BUILD_COMPILER(i()))' $(`_CONCAT(GET_HLL_BUILD_PREFIX(i()),FLAGS)')` -MMD -S $(VERBOSE_ASM_FLAG) $< -o $@'
-`	undivert(include/do_asmouts_last_part.txt)'
+`	undivert(include_regular/do_asmouts_last_part.txt)'
 )'
 ,
 `')dnl
@@ -476,7 +453,7 @@ ifdef(`HAVE_ONLY_PREPROCESS', `.PHONY : only_preprocess'
 `'
 `_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),EFILES)) : $(PREPROCDIR)/%.E : %.GET_HLL_BUILD_FILEEXT(i())'
 `	'`$(GET_HLL_BUILD_COMPILER(i()))' $(`_CONCAT(GET_HLL_BUILD_PREFIX(i()),FLAGS)')` -MMD -E $< -o $@'
-`	undivert(include/only_preprocess_last_part.txt)'
+`	undivert(include_regular/only_preprocess_last_part.txt)'
 )'
 ,
 `')dnl

@@ -18,6 +18,7 @@ types_*.taghl
 C/*
 C++/*
 generic/*
+HDL/*
 old_gpp_stuff/C/*
 old_gpp_stuff/C++/*
 old_gpp_stuff/generic/*

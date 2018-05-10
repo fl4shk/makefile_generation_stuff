@@ -5,22 +5,23 @@ SRCDIRS		:=	$(CURDIR) src src/cpu src/testing
 
 # end stuff
 
+# Prefix for output file name
 PROJ=$(shell basename $(CURDIR))
 
-# Verilog Compiler
+# (System)Verilog Compiler
 VC=iverilog
 
 
 #BUILD=$(VC) -o $(PROJ).vvp
 #BUILD=$(VC) -g2005-sv -o $(PROJ).vvp
 BUILD_VVP=$(VC) -g2009 -o $(PROJ).vvp
-BUILD_VHDL=$(VC) -g2009 -tvhdl -o $(PROJ).vhd
+#BUILD_VHDL=$(VC) -g2009 -tvhdl -o $(PROJ).vhd
 PREPROCESS=$(VC) -g2009 -E -o $(PROJ).E
 
 
 #SRCFILES		:=	$(foreach DIR,$(SRCDIRS),$(notdir $(wildcard $(DIR)/*.v)))
 #
-export VPATH	:=	$(foreach DIR,$(SRCDIRS),$(CURDIR)/$(DIR))
+#export VPATH	:=	$(foreach DIR,$(SRCDIRS),$(CURDIR)/$(DIR))
 #SRCFILES		:=	$(shell find . -type f -iname "*.sv")
 
 #PKGFILES		:=	$(foreach DIR,$(SRCDIRS),$(shell find $(DIR) \
@@ -31,6 +32,7 @@ export VPATH	:=	$(foreach DIR,$(SRCDIRS),$(CURDIR)/$(DIR))
 PKGFILES:=$(foreach DIR,$(SRCDIRS),$(wildcard $(DIR)/*.pkg.sv))
 SRCFILES:=$(foreach DIR,$(SRCDIRS),$(wildcard $(DIR)/*.src.sv))
 
+.PHONY : all
 all: reminder clean
 	$(BUILD_VVP) $(PKGFILES) $(SRCFILES)
 	@#$(BUILD_VHDL) $(PKGFILES) $(SRCFILES)
