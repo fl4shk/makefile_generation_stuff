@@ -36,3 +36,5 @@ mkdir -p HDL
 
 m4 -DDO_VERILOG ${hdl_src} > HDL/GNUmakefile_v_icarus_verilog.mk
 m4 -DDO_SYSTEMVERILOG ${hdl_src} > HDL/GNUmakefile_sv_icarus_verilog.mk
+m4 -DDO_VERILOG -DHAVE_M4 ${hdl_src} > HDL/GNUmakefile_v_icarus_verilog_with_m4.mk
+m4 -DDO_SYSTEMVERILOG -DHAVE_M4 ${hdl_src} > HDL/GNUmakefile_sv_icarus_verilog_with_m4.mk

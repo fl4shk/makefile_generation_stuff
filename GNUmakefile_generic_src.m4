@@ -1,6 +1,6 @@
+include(include/misc_defines.m4)dnl
 define(`STATUS_ANTLR_JSONCPP', ifdef(`ANTLR', ifdef(`JSONCPP', `both', `just_antlr'), ifdef(`JSONCPP', `just_jsoncpp', `neither')))dnl
 dnl
-include(include/misc_defines.m4)dnl
 include(include_regular/generic.m4)dnl
 # These directories specify where source code files are located.
 # Edit these variables if more directories are needed.  
@@ -157,28 +157,28 @@ ifdef(`HAVE_DISASSEMBLE',
 `')dnl
 dnl
 dnl
-ifelse(_IFDEF(`DO_GBA'), `PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-'
+ifelse(_IFELSEDEF(`DO_GBA'), 1, `PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-'
 ,
-_IFDEF(`DO_ARM'), `PREFIX:=arm-none-eabi-'
+_IFELSEDEF(`DO_ARM'), 1, `PREFIX:=arm-none-eabi-'
 ,
 `')dnl
 
 # Compilers and initial compiler flags
 ifdef(`DO_CXX', `CXX:=$(PREFIX)g++'
-ifelse(_IFNDEF(`JSONCPP'),
+ifelse(_IFELSEDEF(`JSONCPP'), 0,
 `CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 '__INITIAL_BASE_FLAGS()
 
 ,
-_IFDEF(`JSONCPP'), 
+_IFELSEDEF(`JSONCPP'), 1, 
 `CXX_FLAGS:=$(CXX_FLAGS) -std=c++17 '__INITIAL_BASE_FLAGS()` \'
 	`$(shell pkg-config --cflags jsoncpp)'
 
 ))dnl
 dnl
 dnl
-ifelse(_IFDEF(`DO_C'), `CC:=$(PREFIX)gcc'
+ifelse(_IFELSEDEF(`DO_C'), 1, `CC:=$(PREFIX)gcc'
 ,
-_IFNDEF(`DO_CXX'), `CC:=$(PREFIX)gcc'
+_IFELSEDEF(`DO_CXX'), 0, `CC:=$(PREFIX)gcc'
 )dnl
 ifdef(`DO_C', `C_FLAGS:=$(C_FLAGS) -std=c11 '__INITIAL_BASE_FLAGS()
 
@@ -186,7 +186,7 @@ ifdef(`DO_C', `C_FLAGS:=$(C_FLAGS) -std=c11 '__INITIAL_BASE_FLAGS()
 dnl
 dnl
 ifdef(`DO_S', `AS:=$(PREFIX)as'
-`ifelse(_IFNDEF(`DO_NON_X86'), `S_FLAGS:=$(S_FLAGS) -mnaked-reg #-msyntax=intel')'
+`ifelse(_IFELSEDEF(`DO_NON_X86'), 0, `S_FLAGS:=$(S_FLAGS) -mnaked-reg #-msyntax=intel')'
 ,
 `')dnl
 dnl
@@ -204,9 +204,9 @@ ifdef(`HAVE_DISASSEMBLE', `OBJDUMP:=$(PREFIX)objdump'
 ifdef(`DO_EMBEDDED', `OBJCOPY:=$(PREFIX)objcopy'
 ,
 `')dnl
-ifelse(_IFDEF(`HAVE_DISASSEMBLE'), `'
+ifelse(_IFELSEDEF(`HAVE_DISASSEMBLE'), 1, `'
 ,
-_IFDEF(`DO_EMBEDDED'), `'
+_IFELSEDEF(`DO_EMBEDDED'), 1, `'
 ,
 `')dnl
 dnl
@@ -350,15 +350,15 @@ ifdef(`HAVE_ONLY_PREPROCESS', EFILES:=MAKE_LIST_OF_HLL_GENERATED_FILES(`EFILES')
 `')dnl
 
 dnl
-dnl ifelse(_IFNDEF(`ANTLR'), `.PHONY : all
-dnl all : all_pre $(OFILES)' ifelse(_IFDEF(`DO_GBA'), `undivert(include_regular/finalize_gba.txt)', 
-dnl _IFNDEF(`DO_GBA'), `undivert(include_regular/finalize_regular.txt)'),
-dnl _IFDEF(`ANTLR'), `undivert(include_regular/finalize_antlr.txt)')dnl
-ifelse(_IFNDEF(`ANTLR'), `.PHONY : all
+dnl ifelse(_IFELSEDEF(`ANTLR'), 0, `.PHONY : all
+dnl all : all_pre $(OFILES)' ifelse(_IFELSEDEF(`DO_GBA'), 1, `undivert(include_regular/finalize_gba.txt)', 
+dnl _IFELSEDEF(`DO_GBA'), 0, `undivert(include_regular/finalize_regular.txt)'),
+dnl _IFELSEDEF(`ANTLR'), 1, `undivert(include_regular/finalize_antlr.txt)')dnl
+ifelse(_IFELSEDEF(`ANTLR'), 0, `.PHONY : all
 all : all_pre $(OFILES)'
-`ifelse(_IFDEF(`DO_GBA'), `undivert(include_regular/finalize_gba.txt)',
-_IFNDEF(`DO_GBA'), `undivert(include_regular/finalize_regular.txt)')',
-_IFDEF(`ANTLR'), `undivert(include_regular/finalize_antlr.txt)')dnl
+`ifelse(_IFELSEDEF(`DO_GBA'), 1, `undivert(include_regular/finalize_gba.txt)',
+_IFELSEDEF(`DO_GBA'), 0, `undivert(include_regular/finalize_regular.txt)')',
+_IFELSEDEF(`ANTLR'), 1, `undivert(include_regular/finalize_antlr.txt)')dnl
 
 
 # all_objs is ENTIRELY optional
@@ -374,27 +374,30 @@ ifdef(`HAVE_DISASSEMBLE', `.PHONY : do_asmouts'
 `')
 
 .PHONY : all_pre
-ifelse(_IFNDEF(`ANTLR'), `all_pre :'
-`	mkdir -p $(OBJDIR) $(DEPDIR)', _IFDEF(`ANTLR'), `all_pre :'
+ifelse(_IFELSEDEF(`ANTLR'), 0, `all_pre :'
+`	mkdir -p $(OBJDIR) $(DEPDIR)', 1, _IFELSEDEF(`ANTLR'), `all_pre :'
 `	mkdir -p $(OBJDIR) $(DEPDIR) src/gen_src/')
-	@for ofile in $(OFILES); \
-	do \
-		mkdir -p $$(dirname $$ofile); \
-	done
-	@for pfile in $(PFILES); \
-	do \
-		mkdir -p $$(dirname $$pfile); \
-	done
+dnl 	@for ofile in $(OFILES); \
+dnl 	do \
+dnl 		mkdir -p $$(dirname $$ofile); \
+dnl 	done
+dnl 	@for pfile in $(PFILES); \
+dnl 	do \
+dnl 		mkdir -p $$(dirname $$pfile); \
+dnl 	done
+	_GEN_OUTPUT_DIRECTORIES(`ofile', `OFILES')
+	_GEN_OUTPUT_DIRECTORIES(`pfile', `PFILES')
 
 
 
 ifdef(`HAVE_DISASSEMBLE', `.PHONY : all_pre_asmout'
 `all_pre_asmout :'
 `	mkdir -p $(ASMOUTDIR)'
-`	@for asmout in $(ASMOUTS); \'
-`	do \'
-`		mkdir -p $$(dirname $$asmout); \'
-`	done'
+dnl `	@for asmout in $(ASMOUTS); \'
+dnl `	do \'
+dnl `		mkdir -p $$(dirname $$asmout); \'
+dnl `	done'
+`_GEN_OUTPUT_DIRECTORIES(`asmout',`ASMOUTS')'
 ,
 `')dnl
 
@@ -448,10 +451,11 @@ ifdef(`HAVE_ONLY_PREPROCESS', `.PHONY : only_preprocess'
 `.PHONY : only_preprocess_pre'
 `only_preprocess_pre :'
 `	mkdir -p $(DEPDIR) $(PREPROCDIR)'
-`	@for efile in $(EFILES); \'
-`	do \'
-`		mkdir -p $$(dirname $$efile); \'
-`	done'
+dnl`	@for efile in $(EFILES); \'
+dnl`	do \'
+dnl`		mkdir -p $$(dirname $$efile); \'
+dnl`	done'
+`_GEN_OUTPUT_DIRECTORIES(`efile',`EFILES')'
 `'
 `'
 `_FOR(`i', 1, NUM_HLL_BUILD_TYPES(), `$(_CONCAT(GET_HLL_BUILD_PREFIX(i()),EFILES)) : $(PREPROCDIR)/%.E : %.GET_HLL_BUILD_FILEEXT(i())'
@@ -463,9 +467,9 @@ ifdef(`HAVE_ONLY_PREPROCESS', `.PHONY : only_preprocess'
 
 .PHONY : clean
 clean :
-ifelse(_IFNDEF(`ANTLR'), 
+ifelse(_IFELSEDEF(`ANTLR'), 0, 
 `	rm -rfv $(OBJDIR) $(DEPDIR) $(ASMOUTDIR) $(PREPROCDIR) $(PROJ) tags *.taghl gmon.out',
-_IFDEF(`ANTLR'), 
+_IFELSEDEF(`ANTLR'), 1, 
 `	rm -rfv $(OBJDIR) $(DEPDIR) $(ASMOUTDIR) $(PREPROCDIR) $(PROJ) tags *.taghl gmon.out $(GENERATED_SOURCES) src/gen_src')
 
 

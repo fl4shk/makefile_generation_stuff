@@ -1,4 +1,4 @@
-changecom()dnl
+changecom()dnl (Just disable the "comment" feature of m4)
 define(`_BACKTICK',`changequote(<,>)`dnl'
 changequote`'')dnl
 dnl
@@ -19,8 +19,13 @@ define(`_ARRDECR', `define(`$1[$2]', eval(defn(`$1[$2]') - 1))')dnl
 define(`_FOR',`ifelse($#,0,``$0'',`ifelse(eval($2<=$3),1,dnl
 `pushdef(`$1',$2)$4`'popdef(`$1')$0(`$1',incr($2),$3,`$4')')')')dnl
 dnl for ifelse
-define(`_IFDEF', `ifdef(`$1', 1, 0), 1')dnl
-define(`_IFNDEF', `ifdef(`$1', 1, 0), 0')dnl
-define(`_GEN_SOURCES', _CONCAT(`$1',`SOURCES')`:=$(foreach DIR,$('`$2'`DIRS),$(wildcard $(DIR)/*.'`$3'`))')dnl
+define(`_IFELSEDEF', `ifdef(`$1', 1, 0)')dnl
+define(`_GEN_RHS_SOURCES', `$(foreach DIR,$('`$1'`DIRS),$(wildcard $(DIR)/*.'`$2'`))')dnl
+dnl define(`_GEN_SOURCES', `_CONCAT(`$1',`SOURCES')` := _GEN_RHS_SOURCES(`$2',`$3')'')dnl
+define(`_GEN_SOURCES', `_CONCAT(`$1',`SOURCES')'` := '`_GEN_RHS_SOURCES(`$2',`$3')')dnl
 dnl CXX_OFILES:=$(CXX_SOURCES:%.cpp=$(OBJDIR)/%.o) 
-define(`_GEN_OTHER_FILES', _CONCAT($1,$2):=$(_CONCAT($1,SOURCES):%.$3=$($4)/%.$5))dnl
+define(`_GEN_OTHER_FILES', _CONCAT($1,$2)` := '$(_CONCAT($1,SOURCES):%.$3=$($4)/%.$5))dnl
+define(`_GEN_OUTPUT_DIRECTORIES', `@for `$1' in $(`$2'); \
+	do \
+		mkdir -p $$(dirname $$`$1'); \
+	done')dnl
