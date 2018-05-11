@@ -4,14 +4,14 @@ ifelse(_IFELSEDEF(`DO_VERILOG'), 1, `define(`WHICH_HDL', `verilog')',
 _IFELSEDEF(`DO_SYSTEMVERILOG'), 1, `define(`WHICH_HDL', `systemverilog')',
 `define(`WHICH_HDL', `UNKNOWN')')dnl
 dnl "WHICH_MAKEFILE()":  .m4 input debugging thing
-ifelse(_IFELSEDEF(`HAVE_M4'), 1, 
-	`ifelse(WHICH_HDL(), `verilog', `define(`WHICH_MAKEFILE', `m4_verilog')',
-	`define(`WHICH_MAKEFILE', `m4_systemverilog')')',
-	_IFELSEDEF(`HAVE_M4'), 0, 
-	`ifelse(WHICH_HDL(), `verilog', `define(`WHICH_MAKEFILE', `just_verilog')',
-	`define(`WHICH_MAKEFILE', `just_systemverilog')')')dnl
+dnl ifelse(_IFELSEDEF(`HAVE_M4'), 1, 
+dnl 	`ifelse(WHICH_HDL(), `verilog', `define(`WHICH_MAKEFILE', `m4_verilog')',
+dnl 	`define(`WHICH_MAKEFILE', `m4_systemverilog')')',
+dnl 	_IFELSEDEF(`HAVE_M4'), 0, 
+dnl 	`ifelse(WHICH_HDL(), `verilog', `define(`WHICH_MAKEFILE', `just_verilog')',
+dnl 	`define(`WHICH_MAKEFILE', `just_systemverilog')')')dnl
 # WHICH_HDL()
-# WHICH_MAKEFILE()
+dnl # WHICH_MAKEFILE()
 dnl 
 # start stuff
 
@@ -56,8 +56,8 @@ WHICH_HDL(), `systemverilog', `PKG_FILES := '`_GEN_RHS_SOURCES(`PKG_',`pkg.sv')'
 ,
 `'),dnl
 _IFELSEDEF(`HAVE_M4'), 1,
-ifelse(WHICH_HDL(), `verilog', `M4_SRC_FILES := '`_GEN_RHS_SOURCES(`SRC_',`src.v.m4')'
-`SRC_FILES := '`_GEN_RHS_OTHER_FILES(`M4_SRC_',`FILES',`src.v.m4',`V_OUT_DIR',`src.v')'
+ifelse(WHICH_HDL(), `verilog', `M4_SRC_FILES := '`_GEN_RHS_SOURCES(`SRC_',`src.m4.v')'
+`SRC_FILES := '`_GEN_RHS_OTHER_FILES(`M4_SRC_',`FILES',`src.m4.v',`V_OUT_DIR',`src.v')'
 ,
 WHICH_HDL(), `systemverilog', `M4_SRC_FILES := '`_GEN_RHS_SOURCES(`SRC_',`src.sv.m4')'
 `M4_PKG_FILES := '`_GEN_RHS_SOURCES(`PKG_',`pkg.sv.m4')'
@@ -84,17 +84,17 @@ all_pre :'
 ifelse(WHICH_HDL(), `verilog', `	mkdir -p $(V_OUT_DIR)
 	_GEN_OUTPUT_DIRECTORIES(`src_file',`SRC_FILES')
 
-$(SRC_FILES) : $(V_OUT_DIR)/%.src.v : %.src.v.m4
+$(SRC_FILES) : $(V_OUT_DIR)/%.src.v : %.src.m4.v
 	m4 $< > $@'
 ,
 WHICH_HDL(), `systemverilog', `	mkdir -p $(SV_OUT_DIR)
 	_GEN_OUTPUT_DIRECTORIES(`src_file',`SRC_FILES')
 	_GEN_OUTPUT_DIRECTORIES(`pkg_file',`PKG_FILES')
 	
-$(SRC_FILES) : $(SV_OUT_DIR)/%.src.sv : $.src.sv.m4
+$(SRC_FILES) : $(SV_OUT_DIR)/%.src.sv : $.src.m4.sv
 	m4 $< > $@
 
-$(PKG_FILES) : $(SV_OUT_DIR)/%.pkg.sv : $.pkg.sv.m4
+$(PKG_FILES) : $(SV_OUT_DIR)/%.pkg.sv : $.pkg.m4.sv
 	m4 $< > $@'
 ,
 `')dnl
@@ -108,7 +108,7 @@ ifelse(WHICH_HDL(), `verilog', `	@#'
 WHICH_HDL(), `systemverilog', `	@echo undivert(include_hdl/reminder_systemverilog.txt)',
 `')dnl
 
-define(`BASIC_CLEAN', `rm -rfv $(PROJ).vvp $(PROJ).vhd $(PROJ).E')dnl
+define(`BASIC_CLEAN', `rm -rf $(PROJ).vvp $(PROJ).vhd $(PROJ).E')dnl
 .PHONY : clean
 clean:  
 ifelse(_IFELSEDEF(`HAVE_M4'), 0,
