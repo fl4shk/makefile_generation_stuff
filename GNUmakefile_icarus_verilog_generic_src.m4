@@ -51,7 +51,7 @@ SV_OUT_DIR := sv_outputs')
 ifelse(_IFELSEDEF(`HAVE_M4'), 0,
 ifelse(WHICH_HDL(), `verilog', `SRC_FILES := '`_GEN_RHS_SOURCES(`SRC_',`src.v')'
 ,
-WHICH_HDL(), `systemverilog', `PKG_FILES := '`_GEN_RHS_SOURCES(`PKG_',`pkg.sv')'
+WHICH_HDL(), `systemverilog', `PKG_FILES := '`_GEN_RHS_SOURCES(`SRC_',`pkg.sv')'
 `SRC_FILES := '`_GEN_RHS_SOURCES(`SRC_',`src.sv')'
 ,
 `'),dnl
