@@ -33,7 +33,7 @@ ifelse(WHICH_HDL(), `verilog', `BUILD_VVP:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -o $(
 BUILD_VHDL:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -tvhdl -o $(PROJ).vhd
 PREPROCESS:=$(VC)$(EXTRA_IVERILOG_OPTIONS)  -E -o $(PROJ).E'
 ,
-WHICH_HDL(), `systemverilog', `BUILD_VVP:=$(VC) -g2009 -o $(PROJ).vvp
+WHICH_HDL(), `systemverilog', `BUILD_VVP:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -o $(PROJ).vvp
 BUILD_VHDL:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -tvhdl -o $(PROJ).vhd
 BUILD_VERILOG:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -tverilog -o $(PROJ).v
 PREPROCESS:=$(VC) $(EXTRA_IVERILOG_OPTIONS) -E -o $(PROJ).E'
