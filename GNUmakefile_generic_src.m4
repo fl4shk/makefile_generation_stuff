@@ -397,7 +397,7 @@ dnl `	@for asmout in $(ASMOUTS); \'
 dnl `	do \'
 dnl `		mkdir -p $$(dirname $$asmout); \'
 dnl `	done'
-`_GEN_OUTPUT_DIRECTORIES(`asmout',`ASMOUTS')'
+	`_GEN_OUTPUT_DIRECTORIES(`asmout',`ASMOUTS')'
 ,
 `')dnl
 
