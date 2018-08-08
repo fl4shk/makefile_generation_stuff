@@ -20,8 +20,19 @@ Generation of GNUmakefiles using GNU m4.
 
 These are indeed specific to the GNU version of Make.
 
+These are mostly intended for my own personal use, but feel free to pick
+them up if that's of interest to you.
+
+Admittedly, I don't actually use all the makefiles that can be generated
+with this setup, but some of them only exist for consistency anyway.
+
+As I'm considering migrating to use of Dlang over C++, GNUmakefiles for use
+with Dlang are being worked on as well now.
+
+<!--
 There are some other ones as well that are not generated, such as the
 Icarus Verilog ones, but those are the exception rather than the rule.
+-->
 
 ## History
 Originally the generation of makefiles was done with
