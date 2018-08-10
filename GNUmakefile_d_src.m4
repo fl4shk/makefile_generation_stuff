@@ -106,6 +106,8 @@ endif
 # This is the name of the output file.  Change this if needed!
 PROJ:=$(shell basename $(CURDIR))$(DEBUG_SUFFIX)
 
+define(`__D_INITIAL_BASE_FLAGS', '-
+
 ifelse(_IFELSEDEF(`DO_ARM'), 1, `NON_D_PREFIX:=arm-none-eabi-'
 ,
 `'dnl
@@ -113,3 +115,4 @@ ifelse(_IFELSEDEF(`DO_ARM'), 1, `NON_D_PREFIX:=arm-none-eabi-'
 
 # Compilers and initial compiler flags
 DC:=ldc2
+

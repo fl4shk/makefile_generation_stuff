@@ -7,10 +7,10 @@ d_src=GNUmakefile_d_src.m4
 mkdir -p generic
 mkdir -p C++
 mkdir -p C
-mkdir -p D
+#mkdir -p D
 
 m4 -DGENERIC ${regular_src} > generic/GNUmakefile_generic.mk
-m4 -DGENERIC ${d_src} > D/GNUmakefile_d_generic.mk
+#m4 -DGENERIC ${d_src} > D/GNUmakefile_d_generic.mk
 
 m4 -DANTLR ${regular_src} > generic/GNUmakefile_antlr.mk
 m4 -DJSONCPP ${regular_src} > generic/GNUmakefile_jsoncpp.mk
@@ -18,7 +18,7 @@ m4 -DANTLR -DJSONCPP ${regular_src} > generic/GNUmakefile_antlr_jsoncpp.mk
 
 m4 -DDO_CXX -DHAVE_DEBUG ${regular_src} > C++/GNUmakefile_cxx.mk
 m4 -DDO_C -DHAVE_DEBUG ${regular_src} > C/GNUmakefile_c.mk
-m4 -DHAVE_DEBUG ${d_src} > D/GNUmakefile_d.mk
+#m4 -DHAVE_DEBUG ${d_src} > D/GNUmakefile_d.mk
 
 m4 -DDO_CXX -DHAVE_DEBUG -DHAVE_DISASSEMBLE ${regular_src} > C++/GNUmakefile_cxx_dis.mk
 m4 -DDO_C -DHAVE_DEBUG -DHAVE_DISASSEMBLE ${regular_src} > C/GNUmakefile_c_dis.mk
@@ -34,7 +34,7 @@ m4 -DDO_C ${regular_src} > C/GNUmakefile_c_no_debug.mk
 m4 -DDO_CXX -DDO_ARM -DHAVE_DEBUG -DDO_S -DHAVE_DISASSEMBLE ${regular_src} > C++/GNUmakefile_cxx_do_arm_full.mk
 m4 -DDO_C -DDO_ARM -DHAVE_DEBUG -DDO_S -DHAVE_DISASSEMBLE ${regular_src} > C/GNUmakefile_c_do_arm_full.mk
 
-m4 -DDO_ARM -DHAVE_DEBUG -DDO_S -DHAVE_DISASSEMBLE ${d_src} > D/GNUmakefile_d_do_arm_full.mk
+#m4 -DDO_ARM -DHAVE_DEBUG -DDO_S -DHAVE_DISASSEMBLE ${d_src} > D/GNUmakefile_d_do_arm_full.mk
 
 
 #m4 -DDO_CXX -DDO_MIPS -DINITIAL_EMBEDDED_DEFINES ${regular_src} > C++/GNUmakefile_cxx_do_mips_full.mk

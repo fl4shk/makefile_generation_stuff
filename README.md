@@ -26,8 +26,10 @@ them up if that's of interest to you.
 Admittedly, I don't actually use all the makefiles that can be generated
 with this setup, but some of them only exist for consistency anyway.
 
+<!--
 As I'm considering migrating to use of Dlang over C++, GNUmakefiles for use
 with Dlang are being worked on as well now.
+-->
 
 <!--
 There are some other ones as well that are not generated, such as the
