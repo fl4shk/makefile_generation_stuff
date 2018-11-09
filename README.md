@@ -16,7 +16,9 @@ You **could** just manually convert the makefiles, but that's annoying.  It
 would defeat the purpose of makefile\_generic\_src.gpp to do that.
 -->
 
+<!--
 Generation of GNUmakefiles using GNU m4.
+-->
 
 These are indeed specific to the GNU version of Make.
 
@@ -43,3 +45,6 @@ Originally the generation of makefiles was done with
 After a while (over a year), it was deemed to be unmaintainable, and it was
 decided to switch to GNU m4 for this mini project.
 
+Then, after *another* while, the use of GNU m4 was *also* was deemed to be
+unmaintainable, and it was decided to switch to Python3 for this mini
+project.

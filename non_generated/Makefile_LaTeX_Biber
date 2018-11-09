@@ -1,4 +1,4 @@
-PROJECT=project_name
+PROJECT=$(shell basename $(CURDIR))
 
 build/${PROJECT}.pdf: build/${PROJECT}.bbl
 	lualatex --output-directory=build ${PROJECT}
