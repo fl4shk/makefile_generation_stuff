@@ -40,7 +40,7 @@ class Target(enum.Enum):
 class MakefileBuilder:
 	def __init__(self, filename, src_types, haves={Have.Debug},
 		target=Target.Host,
-		status_antlr_jsoncpp={}):
+		status_antlr_jsoncpp=set()):
 
 		self.__filename = filename
 
@@ -63,18 +63,26 @@ class MakefileBuilder:
 		#		err(sconcat("source type \"", st, "\" not supported."))
 
 	def build(self):
+		some_dirname = os.path.dirname(self.__filename)
+		if (not os.path.exists(some_dirname)):
+			os.makedirs(some_dirname)
+
+		f = open(self.__filename, "w+")
+
+		f.close()
 		pass
+
 
 builders \
 = [ \
 	MakefileBuilder("generic/GNUmakefile_generic.mk", {SrcType.Generic}),
-	MakefileBuilder("generic/GNUmakefile_antlr.mk", {SrcType.Cxx},
+	MakefileBuilder("C++/GNUmakefile_antlr.mk", {SrcType.Cxx},
 		{Have.Debug, Have.Disassemble}, Target.Host,
 		{StatusAntlrJsoncpp.Antlr}),
-	MakefileBuilder("generic/GNUmakefile_jsoncpp.mk", {SrcType.Cxx},
+	MakefileBuilder("C++/GNUmakefile_jsoncpp.mk", {SrcType.Cxx},
 		{Have.Debug, Have.Disassemble}, Target.Host,
 		StatusAntlrJsoncpp.Jsoncpp),
-	MakefileBuilder("generic/GNUmakefile_antlr_jsoncpp.mk", {SrcType.Cxx},
+	MakefileBuilder("C++/GNUmakefile_antlr_jsoncpp.mk", {SrcType.Cxx},
 		{Have.Debug, Have.Disassemble}, Target.Host,
 		{StatusAntlrJsoncpp.Antlr, StatusAntlrJsoncpp.Jsoncpp}),
 
