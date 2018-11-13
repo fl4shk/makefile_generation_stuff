@@ -67,13 +67,18 @@ class MakefileBuilder:
 		f = open(self.__filename, "w+")
 
 		f.write(self.__get_src_dirs())
+		f.write(self.__get_debug_stuff_part_0())
+		f.write(self.__get_proj())
+		f.write(self.__get_have_disassemble_stuff_part_0())
+		f.write(self.__get_compilers_and_initial_compiler_flags())
 
 
 		f.close()
 		pass
 
 	def __get_src_dirs(self):
-		ret = "# These directories specify where source code files "
+		ret = str()
+		ret += "# These directories specify where source code files "
 		ret += "are located.\n"
 		ret += "# Edit these variables if more directories are needed.\n"
 		ret += "# Separate each entry by spaces\n"
@@ -99,6 +104,47 @@ class MakefileBuilder:
 
 		return ret
 
+	def __get_debug_stuff_part_0(self):
+		ret = str()
+		ret += "# Whether or not to do debugging stuff\n"
+		ret += "#DEBUG:=yeah do debug\n"
+		ret += "\n"
+		ret += "DEBUG_OPTIMIZATION_LEVEL:=-O0\n"
+		ret += "REGULAR_OPTIMIZATION_LEVEL:=-O2\n"
+		ret += "\n"
+		ret += "\n"
+		ret += "ALWAYS_DEBUG_SUFFIX:=_debug\n"
+		ret += "ifdef DEBUG\n"
+		ret += "	DEBUG_SUFFIX:=$(ALWAYS_DEBUG_SUFFIX)\n"
+		ret += "endif\n"
+		ret += "\n"
+		return ret
+
+	def __get_proj(self):
+		ret = str()
+
+		ret += "# This is the name of the output file.  " \
+			+ "Change this if needed!\n"
+		ret += "PROJ:=$(shell basename $(CURDIR))$(DEBUG_SUFFIX)\n"
+		ret += "\n"
+		return ret
+
+	def __get_have_disassemble_stuff_part_0(self):
+		ret = str()
+
+		if (Have.Disassemble in self.__haves):
+			ret += "# This is used for do_asmouts\n"
+			ret += "#VERBOSE_ASM_FLAG:=-fverbose-asm\n"
+
+		ret += "\n"
+
+		return ret
+
+	def __get_compilers_and_initial_compiler_flags(self):
+		ret = str()
+
+		return ret
+
 	def __convert_src_type_to_prefix(self, some_src_type):
 		if (some_src_type == SrcType.Cxx):
 			return "CXX"
@@ -108,6 +154,9 @@ class MakefileBuilder:
 			return "S"
 		else:
 			return "NS"
+
+	def have_cxx(self):
+		return (SrcType.Cxx in set(self.__src_types))
 
 
 builders \
