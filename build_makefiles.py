@@ -112,6 +112,8 @@ class MakefileBuilder:
 		ret += "DEBUG_OPTIMIZATION_LEVEL:=-O0\n"
 		ret += "REGULAR_OPTIMIZATION_LEVEL:=-O2\n"
 		ret += "\n"
+		if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
+			ret += "GRAMMAR_PREFIX:=Grammar\n"
 		ret += "\n"
 		ret += "ALWAYS_DEBUG_SUFFIX:=_debug\n"
 		ret += "ifdef DEBUG\n"
@@ -142,6 +144,8 @@ class MakefileBuilder:
 
 	def __get_compilers_and_initial_compiler_flags(self):
 		ret = str()
+
+		ret += "# Compilers and initial compiler flags\n"
 
 		return ret
 
