@@ -147,6 +147,9 @@ class MakefileBuilder:
 
 		ret += "# Compilers and initial compiler flags\n"
 
+		for src_type in self.__src_types:
+			ret += self.__inner_get_initial_stuff(src_type)
+
 		return ret
 
 	def __convert_src_type_to_prefix(self, some_src_type):
@@ -158,6 +161,28 @@ class MakefileBuilder:
 			return "S"
 		else:
 			return "NS"
+	def __inner_get_initial_stuff(self, some_src_type):
+		ret = str()
+
+		flags_prefix = self.__convert_src_type_to_prefix(some_src_type)
+		if (some_src_type == SrcType.Cxx):
+			ret += "CXX:=$(PREFIX)g++\n"
+			ret +=  flags_prefix + "_FLAGS:=" \
+				+ "$(" + flags_prefix + "_FLAGS)" \
+				" -std=c++17 -Wall\n"
+			ret += "\n"
+		elif (some_src_type == SrcType.C):
+			ret += "CC:=$(PREFIX)gcc\n"
+			ret +=  flags_prefix + "_FLAGS:=" \
+				+ "$(" + flags_prefix + "_FLAGS)" \
+				" -std=c11 -Wall\n"
+			ret += "\n"
+		elif (some_src_type == SrcType.S):
+			pass
+		else:
+			pass
+
+		return ret
 
 	def have_cxx(self):
 		return (SrcType.Cxx in set(self.__src_types))
@@ -167,13 +192,13 @@ builders \
 = [ \
 	MakefileBuilder("generic/GNUmakefile_generic.mk", [SrcType.Generic]),
 	MakefileBuilder("C++/GNUmakefile_antlr.mk", [SrcType.Cxx],
-		{Have.Disassemble}, Target.Host,
+		set(), Target.Host,
 		{StatusAntlrJsoncpp.Antlr}),
 	MakefileBuilder("C++/GNUmakefile_jsoncpp.mk", [SrcType.Cxx],
-		{Have.Disassemble}, Target.Host,
+		set(), Target.Host,
 		{StatusAntlrJsoncpp.Jsoncpp}),
 	MakefileBuilder("C++/GNUmakefile_antlr_jsoncpp.mk", [SrcType.Cxx],
-		{Have.Disassemble}, Target.Host,
+		set(), Target.Host,
 		{StatusAntlrJsoncpp.Antlr, StatusAntlrJsoncpp.Jsoncpp}),
 
 	MakefileBuilder("C++/GNUmakefile_cxx.mk", [SrcType.Cxx]),
