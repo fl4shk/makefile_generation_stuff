@@ -66,17 +66,17 @@ class MakefileBuilder:
 
 		f = open(self.__filename, "w+")
 
-		f.write(self.__get_src_dirs())
-		f.write(self.__get_debug_stuff_part_0())
-		f.write(self.__get_proj())
-		f.write(self.__get_have_disassemble_stuff_part_0())
-		f.write(self.__get_compilers_and_initial_compiler_flags())
+		f.write(self.get_src_dirs())
+		f.write(self.get_debug_stuff_part_0())
+		f.write(self.get_proj())
+		f.write(self.get_have_disassemble_stuff_part_0())
+		f.write(self.get_compilers_and_initial_compiler_flags())
 
 
 		f.close()
 		pass
 
-	def __get_src_dirs(self):
+	def get_src_dirs(self):
 		ret = str()
 		ret += "# These directories specify where source code files "
 		ret += "are located.\n"
@@ -97,14 +97,14 @@ class MakefileBuilder:
 		ret += "\n"
 
 		for src_type in self.__src_types:
-			ret += self.__convert_src_type_to_prefix(src_type)
+			ret += self.convert_src_type_to_prefix(src_type)
 			ret += "_DIRS:=$(SHARED_SRC_DIRS)\n"
 
 		ret += "# End of source directories\n\n\n"
 
 		return ret
 
-	def __get_debug_stuff_part_0(self):
+	def get_debug_stuff_part_0(self):
 		ret = str()
 		ret += "# Whether or not to do debugging stuff\n"
 		ret += "#DEBUG:=yeah do debug\n"
@@ -122,7 +122,7 @@ class MakefileBuilder:
 		ret += "\n"
 		return ret
 
-	def __get_proj(self):
+	def get_proj(self):
 		ret = str()
 
 		ret += "# This is the name of the output file.  " \
@@ -131,7 +131,7 @@ class MakefileBuilder:
 		ret += "\n"
 		return ret
 
-	def __get_have_disassemble_stuff_part_0(self):
+	def get_have_disassemble_stuff_part_0(self):
 		ret = str()
 
 		if (Have.Disassemble in self.__haves):
@@ -142,17 +142,32 @@ class MakefileBuilder:
 
 		return ret
 
-	def __get_compilers_and_initial_compiler_flags(self):
+	def get_compilers_and_initial_compiler_flags(self):
 		ret = str()
 
 		ret += "# Compilers and initial compiler flags\n"
 
 		for src_type in self.__src_types:
 			ret += self.__inner_get_initial_stuff(src_type)
+		#ret += "\n"
+
+		if ((SrcType.S in set(self.__src_types))
+			or (SrcType.Ns in set(self.__src_types))):
+			ret += "\n"
+
+		if (Have.Disassemble in self.__haves):
+			ret += "OBJDUMP:=$(PREFIX)objdump\n\n"
+
+
+		if (SrcType.Cxx in set(self.__src_types)):
+			ret += "LD:=$(CXX)\n"
+		else:
+			ret += "LD:=$(CC)\n"
+		ret += "\n"
 
 		return ret
 
-	def __convert_src_type_to_prefix(self, some_src_type):
+	def convert_src_type_to_prefix(self, some_src_type):
 		if (some_src_type == SrcType.Cxx):
 			return "CXX"
 		elif (some_src_type == SrcType.C):
@@ -164,28 +179,41 @@ class MakefileBuilder:
 	def __inner_get_initial_stuff(self, some_src_type):
 		ret = str()
 
-		flags_prefix = self.__convert_src_type_to_prefix(some_src_type)
+		#flags_prefix = self.convert_src_type_to_prefix(some_src_type)
+		flags_var = self.__get_var(some_src_type, "_FLAGS")
+		flags_rhs_var = self.__get_rhs_var(flags_var)
+
 		if (some_src_type == SrcType.Cxx):
 			ret += "CXX:=$(PREFIX)g++\n"
-			ret +=  flags_prefix + "_FLAGS:=" \
-				+ "$(" + flags_prefix + "_FLAGS)" \
-				" -std=c++17 -Wall\n"
+			ret += flags_var + ":=" + flags_rhs_var \
+				+ " -std=c++17 -Wall"
+			if (StatusAntlrJsoncpp.Jsoncpp in self.__status_antlr_jsoncpp):
+				ret += " \\\n"
+				ret += "\t$(shell pkg-config --cflags jsoncpp)\n"
+			else:
+				ret += "\n"
 			ret += "\n"
 		elif (some_src_type == SrcType.C):
 			ret += "CC:=$(PREFIX)gcc\n"
-			ret +=  flags_prefix + "_FLAGS:=" \
-				+ "$(" + flags_prefix + "_FLAGS)" \
-				" -std=c11 -Wall\n"
+			ret += flags_var + ":=" + flags_rhs_var \
+				+ " -std=c11 -Wall\n"
 			ret += "\n"
 		elif (some_src_type == SrcType.S):
-			pass
+			ret += "AS:=$(PREFIX)as\n"
+			ret += "S_FLAGS:=$(S_FLAGS) -mnaked-reg #-msyntax=intel\n"
 		else:
-			pass
+			ret += "NS:=nasm\n"
+			ret += "NS_FLAGS:=$(NS_FLAGS) -f elf64\n"
 
 		return ret
 
 	def have_cxx(self):
 		return (SrcType.Cxx in set(self.__src_types))
+	def __get_var(self, some_src_type, suffix):
+		return sconcat(self.convert_src_type_to_prefix(some_src_type),
+			suffix)
+	def __get_rhs_var(self, some_var_name):
+		return sconcat("$(", some_var_name, ")")
 
 
 builders \
