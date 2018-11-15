@@ -165,6 +165,22 @@ class MakefileBuilder:
 			ret += "LD:=$(CC)\n"
 		ret += "\n"
 
+		ret += "# Initial linker flags\n"
+		ret += "LD_FLAGS:=$(LD_FLAGS) -lm"
+
+		if (len(self.__status_antlr_jsoncpp) != 0):
+			ret += " \\"
+		ret += "\n"
+
+		if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
+			ret += "\t-lantlr4-runtime \\\n"
+		if (StatusAntlrJsoncpp.Jsoncpp in self.__status_antlr_jsoncpp):
+			ret += "\t-ljsoncpp \\\n"
+
+		ret += "\n"
+		ret += "\n"
+		ret += "\n"
+
 		return ret
 
 	def convert_src_type_to_prefix(self, some_src_type):
