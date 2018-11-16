@@ -21,6 +21,7 @@ class SrcType(enum.Enum):
 	C = enum.auto()
 	S = enum.auto()
 	Ns = enum.auto()
+	Bin = enum.auto()
 
 class Have(enum.Enum):
 	Disassemble = enum.auto()
@@ -32,19 +33,33 @@ class StatusAntlrJsoncpp(enum.Enum):
 
 class Target(enum.Enum):
 	Host = enum.auto()
+	Embedded = enum.auto()
+
+class EmbeddedType(enum.Enum):
+	Any = enum.auto()
 	Arm = enum.auto()
 	Gba = enum.auto()
 
 
 class MakefileBuilder:
+	__src_type_properties \
+		= {SrcType.Cxx: {"prefix": "CXX", "file_ext": ".cpp"},
+		SrcType.C: {"prefix": "C", "file_ext": ".c"},
+		SrcType.S: {"prefix": "S", "file_ext": ".s"},
+		SrcType.Ns: {"prefix": "NS", "file_ext": ".nasm"},
+		SrcType.Bin: {"prefix": "BIN", "file_ext": ".bin"}}
+
 	def __init__(self, filename, src_types, haves=set(),
-		target=Target.Host, status_antlr_jsoncpp=set()):
+		target=Target.Host, embedded_type=EmbeddedType.Any,
+		status_antlr_jsoncpp=set()):
 
 		self.__filename = filename
 
 		if (src_types[0] == SrcType.Generic):
 			self.__src_types = [SrcType.Cxx, SrcType.C, SrcType.S,
 				SrcType.Ns]
+			#self.__src_types = [SrcType.Cxx, SrcType.C, SrcType.S,
+			#	SrcType.Ns, SrcType.Bin]
 			self.__haves = {Have.Disassemble, Have.OnlyPreprocess}
 			self.__target = Target.Host
 		else:
@@ -52,12 +67,11 @@ class MakefileBuilder:
 			self.__haves = haves
 			self.__target = target
 
+		self.__embedded_type = embedded_type
 		self.__status_antlr_jsoncpp = status_antlr_jsoncpp
 
-		#for st in self.__src_types:
-		#	if ((st != "CXX") and (st != "C") and (st != "S")
-		#		and (st != "NS")):
-		#		err(sconcat("source type \"", st, "\" not supported."))
+
+
 
 	def build(self):
 		some_dirname = os.path.dirname(self.__filename)
@@ -71,6 +85,10 @@ class MakefileBuilder:
 		f.write(self.get_proj())
 		f.write(self.get_have_disassemble_stuff_part_0())
 		f.write(self.get_compilers_and_initial_compiler_flags())
+		f.write(self.get_debug_stuff_part_1())
+		f.write(self.get_embedded_extras())
+		f.write(self.get_final_flags())
+		f.write(self.get_generated_dirs_and_lists())
 
 
 		f.close()
@@ -122,6 +140,52 @@ class MakefileBuilder:
 		ret += "\n"
 		return ret
 
+	def get_debug_stuff_part_1(self):
+		ret = str()
+		ret += "ifdef DEBUG\n"
+		ret += "\tEXTRA_DEBUG_FLAGS:=-g\n"
+		ret += "\tDEBUG_FLAGS:=-gdwarf-3 $(EXTRA_DEBUG_FLAGS)\n"
+		ret += "\tEXTRA_LD_FLAGS:=$(DEBUG_FLAGS)\n"
+		ret += "\tOPTIMIZATION_LEVEL:=$(DEBUG_OPTIMIZATION_LEVEL)\n"
+		ret += "else\n"
+		ret += "\tOPTIMIZATION_LEVEL:=$(REGULAR_OPTIMIZATION_LEVEL)\n"
+		ret += "endif\n"
+		ret += "\n"
+		ret += "\n"
+		return ret
+
+	def get_embedded_extras(self):
+		ret = str()
+
+		if (self.__target == Target.Embedded):
+			ret += "LD_SCRIPT:=linkscript.ld\n"
+			ret += "COMMON_LD_FLAGS:=$(COMMON_LD_FLAGS) -T $(LD_SCRIPT)\n"
+
+			if (self.__embedded_type_is_any_arm()):
+				ret += "\n"
+				ret += "\n"
+
+				ret += "EXTRA_BASE_FLAGS:=-mcpu=arm7tdmi " \
+					+ "-mtune=arm7tdmi -mthumb \\\n"
+				ret += "\t-mthumb-interwork \\\n"
+				ret += "\t-fno-threadsafe-statics -nostartfiles\n"
+
+				ret += "\n"
+
+				ret += "EXTRA_LD_FLAGS:=$(EXTRA_LD_FLAGS) -mthumb " \
+					+ "--specs=nosys.specs \\\n"
+				ret += "\t-lm -lgcc -lc -lstdc++\n"
+
+				if (Have.Disassemble in self.__haves):
+					ret += "DISASSEMBLE_BASE_FLAGS:=-marm7tdmi\n"
+
+		ret += "\n"
+		ret += "\n"
+
+
+		return ret
+
+
 	def get_proj(self):
 		ret = str()
 
@@ -137,6 +201,11 @@ class MakefileBuilder:
 		if (Have.Disassemble in self.__haves):
 			ret += "# This is used for do_asmouts\n"
 			ret += "#VERBOSE_ASM_FLAG:=-fverbose-asm\n"
+		if (self.__target == Target.Embedded):
+			if (self.__embedded_type == EmbeddedType.Arm):
+				ret += "PREFIX:=arm-none-eabi-\n"
+			elif (self.__embedded_type == EmbeddedType.Gba):
+				ret += "PREFIX:=$(DEVKITARM)/bin/arm-none-eabi-\n"
 
 		ret += "\n"
 
@@ -156,9 +225,15 @@ class MakefileBuilder:
 			ret += "\n"
 
 		if (Have.Disassemble in self.__haves):
-			ret += "OBJDUMP:=$(PREFIX)objdump\n\n"
+			ret += "OBJDUMP:=$(PREFIX)objdump\n"
+
+		if (self.__target == Target.Embedded):
+			ret += "OBJCOPY:=$(PREFIX)objcopy\n"
+
+		ret += "\n"
 
 
+		# is $(LD) $(CXX) or $(CC)?
 		if (SrcType.Cxx in set(self.__src_types)):
 			ret += "LD:=$(CXX)\n"
 		else:
@@ -183,15 +258,99 @@ class MakefileBuilder:
 
 		return ret
 
+	def get_final_flags(self):
+		ret = str()
+		ret += "FINAL_BASE_FLAGS:=$(OPTIMIZATION_LEVEL) \\\n"
+		ret += "\t$(EXTRA_BASE_FLAGS) $(EXTRA_DEBUG_FLAGS)\n"
+		ret += "\n"
+
+		ret += "# Final compiler and linker flags\n"
+
+		for hll in self.get_supported_hlls():
+			flags_var = self.__get_var(hll, "_FLAGS")
+			flags_rhs_var = self.__get_rhs_var(flags_var)
+			ret += flags_var + ":=" + flags_rhs_var \
+				+ " $(FINAL_BASE_FLAGS)\n"
+
+		ret += "LD_FLAGS:=$(LD_FLAGS) $(EXTRA_LD_FLAGS) " \
+			+ "$(COMMON_LD_FLAGS)\n"
+		ret += "\n"
+		ret += "\n"
+		ret += "\n"
+		ret += "\n"
+		return ret
+
+	def get_generated_dirs_and_lists(self):
+		
+		ret = str()
+		ret += "# Generated directories\n"
+		ret += "OBJDIR:=objs$(DEBUG_SUFFIX)\n"
+
+		if (Have.Disassemble in self.__haves):
+			ret += "ASMOUTDIR:=asmouts$(DEBUG_SUFFIX)\n"
+
+		ret += "DEPDIR:=deps$(DEBUG_SUFFIX)\n"
+
+		if (Have.OnlyPreprocess in self.__haves):
+			ret += "PREPROCDIR:=preprocs$(DEBUG_SUFFIX)\n"
+
+		ret += "\n"
+		ret += "\n"
+
+		def get_filename_conversion_list(self, some_src_type,
+			dst_var_suffix, dst_file_dir, dst_file_ext):
+			ret = str()
+
+			sources_var = self.__get_var(some_src_type, "_SOURCES")
+			dst_var = self.__get_var(some_src_type, dst_var_suffix)
+
+			ret += sconcat(dst_var, " := $(", sources_var, ":%",
+				self.get_src_file_extension(some_src_type),
+				"=$(", dst_file_dir, ")/%", dst_file_ext, ")\n")
+
+			return ret
+
+		def gen_regular_lists(self, some_src_type, supported_hlls_set):
+			ret = str()
+
+			sources_var = self.__get_var(some_src_type, "_SOURCES")
+			ret += sconcat(sources_var, " := $(foreach DIR,$(",
+				self.__get_var(some_src_type, "_DIRS"), "),$(wildcard ",
+				"$(DIR)/*", self.get_src_file_extension(some_src_type),
+				"))\n")
+
+			ret += get_filename_conversion_list(self, some_src_type,
+				"_OFILES", "OBJDIR", ".o")
+			ret += get_filename_conversion_list(self, some_src_type,
+				"_PFILES", "DEPDIR", ".P")
+
+			#if ((Have.Disassemble in self.__haves)
+			#	and (some_src_type in supported_hlls_set)):
+			#	ret += "# Assembly source code generated by gcc/g++"
+			#	ret += get_filename_conversion(some_src_type)
+
+
+			return ret
+
+		supported_hlls_set = set(self.get_supported_hlls())
+
+		if (SrcType.Bin in set(self.__src_types)):
+			ret += gen_regular_lists(self, SrcType.Bin, supported_hlls_set)
+
+		for src_type in self.__src_types:
+			if (src_type != SrcType.Bin):
+				ret += gen_regular_lists(self, src_type,
+					supported_hlls_set)
+
+		ret += "\n"
+
+		return ret
+
 	def convert_src_type_to_prefix(self, some_src_type):
-		if (some_src_type == SrcType.Cxx):
-			return "CXX"
-		elif (some_src_type == SrcType.C):
-			return "C"
-		elif (some_src_type == SrcType.S):
-			return "S"
-		else:
-			return "NS"
+		return self.__src_type_properties[some_src_type]["prefix"]
+	def get_src_file_extension(self, some_src_type):
+		return self.__src_type_properties[some_src_type]["file_ext"]
+
 	def __inner_get_initial_stuff(self, some_src_type):
 		ret = str()
 
@@ -216,10 +375,33 @@ class MakefileBuilder:
 			ret += "\n"
 		elif (some_src_type == SrcType.S):
 			ret += "AS:=$(PREFIX)as\n"
-			ret += "S_FLAGS:=$(S_FLAGS) -mnaked-reg #-msyntax=intel\n"
-		else:
+
+			if (self.__target == Target.Host):
+				ret += "S_FLAGS:=$(S_FLAGS) -mnaked-reg #-msyntax=intel\n"
+		elif (some_src_type == SrcType.Ns):
 			ret += "NS:=nasm\n"
 			ret += "NS_FLAGS:=$(NS_FLAGS) -f elf64\n"
+
+		return ret
+
+	def get_supported_hlls(self):
+		ret = []
+
+		for hll in self.__src_types:
+			if (hll == SrcType.Cxx):
+				ret += [hll]
+			elif (hll == SrcType.C):
+				ret += [hll]
+
+		return ret
+
+	def get_supported_non_hlls(self):
+		ret = []
+
+		supported_hlls_set = set(self.get_supported_hlls())
+		for non_hll in self.__src_types:
+			if (non_hll not in supported_hlls_set):
+				ret += [non_hll]
 
 		return ret
 
@@ -232,22 +414,33 @@ class MakefileBuilder:
 		return sconcat("$(", some_var_name, ")")
 
 
+
+	def __embedded_type_is_any_arm(self):
+		return ((self.__embedded_type == EmbeddedType.Arm)
+			or (self.__embedded_type == EmbeddedType.Gba))
+
+
+
+
 builders \
 = [ \
 	MakefileBuilder("generic/GNUmakefile_generic.mk", [SrcType.Generic]),
 	MakefileBuilder("C++/GNUmakefile_antlr.mk", [SrcType.Cxx],
-		set(), Target.Host,
+		set(), Target.Host, EmbeddedType.Any,
 		{StatusAntlrJsoncpp.Antlr}),
 	MakefileBuilder("C++/GNUmakefile_jsoncpp.mk", [SrcType.Cxx],
-		set(), Target.Host,
+		set(), Target.Host, EmbeddedType.Any,
 		{StatusAntlrJsoncpp.Jsoncpp}),
 	MakefileBuilder("C++/GNUmakefile_antlr_jsoncpp.mk", [SrcType.Cxx],
-		set(), Target.Host,
+		set(), Target.Host, EmbeddedType.Any,
 		{StatusAntlrJsoncpp.Antlr, StatusAntlrJsoncpp.Jsoncpp}),
 
 	MakefileBuilder("C++/GNUmakefile_cxx.mk", [SrcType.Cxx]),
 	MakefileBuilder("C++/GNUmakefile_cxx_dis.mk", [SrcType.Cxx],
 		{Have.Disassemble}),
+	MakefileBuilder("C++/GNUmakefile_cxx_do_arm_full.mk", [SrcType.Cxx,
+		SrcType.S, SrcType.Bin], {Have.Disassemble, Have.OnlyPreprocess},
+		Target.Embedded, EmbeddedType.Arm),
 ]
 
 for builder in builders:
