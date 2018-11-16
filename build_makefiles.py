@@ -229,7 +229,8 @@ class MakefileBuilder:
 
 		if (self.__target == Target.Embedded):
 			ret += "OBJCOPY:=$(PREFIX)objcopy\n"
-			ret += "\n"
+
+		ret += "\n"
 
 		#ret += "\n"
 
@@ -377,7 +378,9 @@ class MakefileBuilder:
 				ret += "\t$(shell pkg-config --cflags jsoncpp)\n"
 			else:
 				ret += "\n"
-			ret += "\n"
+				ret += "\n"
+
+			#ret += "\n"
 		elif (some_src_type == SrcType.C):
 			ret += "CC:=$(PREFIX)gcc\n"
 			ret += flags_var + ":=" + flags_rhs_var \
