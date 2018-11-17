@@ -43,11 +43,14 @@ class EmbeddedType(enum.Enum):
 
 class MakefileBuilder:
 	__src_type_properties \
-		= {SrcType.Cxx: {"prefix": "CXX", "file_ext": ".cpp"},
-		SrcType.C: {"prefix": "C", "file_ext": ".c"},
-		SrcType.S: {"prefix": "S", "file_ext": ".s"},
-		SrcType.Ns: {"prefix": "NS", "file_ext": ".nasm"},
-		SrcType.Bin: {"prefix": "BIN", "file_ext": ".bin"}}
+		= {SrcType.Cxx: {"prefix": "CXX", "src_prefix": "CXX",
+			"file_ext": ".cpp"},
+		SrcType.C: {"prefix": "C", "src_prefix": "C", "file_ext": ".c"},
+		SrcType.S: {"prefix": "S", "src_prefix": "S", "file_ext": ".s"},
+		SrcType.Ns: {"prefix": "NS", "src_prefix": "S",
+			"file_ext": ".nasm"},
+		SrcType.Bin: {"prefix": "BIN", "src_prefix": "BIN",
+			"file_ext": ".bin"}}
 
 	def __init__(self, filename, src_types, haves=set(),
 		target=Target.Host, embedded_type=EmbeddedType.Any,
@@ -317,9 +320,9 @@ class MakefileBuilder:
 
 			sources_var = self.__get_var(some_src_type, "_SOURCES")
 			ret += sconcat(sources_var, " := $(foreach DIR,$(",
-				self.__get_var(some_src_type, "_DIRS"), "),$(wildcard ",
-				"$(DIR)/*", self.get_src_file_extension(some_src_type),
-				"))\n")
+				self.convert_src_type_to_src_prefix(some_src_type),
+				"_DIRS),$(wildcard $(DIR)/*",
+				self.get_src_file_extension(some_src_type), "))\n")
 
 			ret += get_filename_conversion_list(self, some_src_type,
 				"_OFILES", "OBJDIR", ".o")
@@ -335,30 +338,110 @@ class MakefileBuilder:
 
 			if (some_src_type in supported_hlls_set):
 				ret += "\n"
-				ret += "\n"
+			ret += "\n"
 
 
+			return ret
+
+		def gen_final_list(self, some_var_name, some_suffix,
+			only_hlls=False):
+			ret = str()
+
+			supported_hlls_set = set(self.get_supported_hlls())
+
+			ret += sconcat(some_var_name, ":=")
+			for i in range(len(self.__src_types)):
+				src_type = self.__src_types[i]
+
+				if ((only_hlls == False)
+					or ((only_hlls == True)
+					and (src_type in supported_hlls_set))):
+
+					ret += self.__get_rhs_var(self.__get_var(src_type,
+						"_OFILES"))
+					if ((i + 1) != len(self.__src_types)):
+						ret += " "
+			ret += "\n"
 			return ret
 
 		supported_hlls_set = set(self.get_supported_hlls())
 
 		if (SrcType.Bin in set(self.__src_types)):
 			ret += gen_regular_lists(self, SrcType.Bin, supported_hlls_set)
-		else:
 			ret += "\n"
-		ret += "\n"
+		else:
+			ret += "\n\n"
+		#ret += "\n"
 
+		#for src_type in self.__src_types:
+		non_bin_src_types = []
 		for src_type in self.__src_types:
 			if (src_type != SrcType.Bin):
-				ret += gen_regular_lists(self, src_type,
-					supported_hlls_set)
+				non_bin_src_types += [src_type]
+
+		for i in range(len(non_bin_src_types)):
+			src_type = non_bin_src_types[i]
+
+			ret += gen_regular_lists(self, src_type, supported_hlls_set)
+			#ret += "\n"
+
+			if (((i + 1) == len(non_bin_src_types))
+				and (src_type not in supported_hlls_set)):
+				ret += "\n"
 
 		#ret += "\n"
+		#ret += "\n"
+
+
+		#ret += "\n"
+		ret += "# Compiler-generated files\n"
+		ret += "# OFILES are object code files (extension .o)\n"
+		#ret += "OFILES:=$(CXX_OFILES) $(C_OFILES) $(S_OFILES) $(NS_OFILES)"
+		ret += gen_final_list(self, "OFILES", "_OFILES")
+
+		ret += "# PFILES are used for automatic dependency generation\n"
+		#PFILES:=$(CXX_PFILES) $(C_PFILES) $(S_PFILES) $(NS_PFILES)
+		ret += gen_final_list(self, "PFILES", "_PFILES")
+
+		if (Have.Disassemble in self.__haves):
+			ret += gen_final_list(self, "ASMOUTS", "_ASMOUTS", True)
+			#ASMOUTS:=$(CXX_ASMOUTS) $(C_ASMOUTS)"
+
+		ret += "\n"
+
+		if (Have.OnlyPreprocess in self.__haves):
+			ret += "# Preprocessed output of C++ and/or C files\n"
+			#CXX_EFILES := $(CXX_SOURCES:%.cpp=$(PREPROCDIR)/%.E)
+			#C_EFILES := $(C_SOURCES:%.c=$(PREPROCDIR)/%.E)
+
+			for hll in self.get_supported_hlls():
+				ret += get_filename_conversion_list(self, hll,
+					"_EFILES", "PREPROCDIR", ".E")
+
+
+			ret += gen_final_list(self, "EFILES", "_EFILES", True)
+			#EFILES:=$(CXX_EFILES) $(C_EFILES)
+
+		ret += "\n"
+
+
+
+		if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
+			ret += "MODIFED_GENERATED_SOURCES:=\n"
+			ret += sconcat("FINAL_GENERATED_SOURCES:=src/gen_src/",
+				"$(GRAMMAR_PREFIX)Parser.h\n")
+			ret += sconcat("GENERATED_SOURCES:=",
+				"$(MODIFED_GENERATED_SOURCES) \\\n")
+			ret += "\t$(FINAL_GENERATED_SOURCES)\n"
+
+		ret += "\n"
 
 		return ret
 
 	def convert_src_type_to_prefix(self, some_src_type):
 		return self.__src_type_properties[some_src_type]["prefix"]
+	def convert_src_type_to_src_prefix(self, some_src_type):
+		return self.__src_type_properties[some_src_type]["src_prefix"]
 	def get_src_file_extension(self, some_src_type):
 		return self.__src_type_properties[some_src_type]["file_ext"]
 
@@ -439,13 +522,13 @@ builders \
 = [ \
 	MakefileBuilder("generic/GNUmakefile_generic.mk", [SrcType.Generic]),
 	MakefileBuilder("C++/GNUmakefile_antlr.mk", [SrcType.Cxx],
-		set(), Target.Host, EmbeddedType.Any,
+		[Have.OnlyPreprocess], Target.Host, EmbeddedType.Any,
 		{StatusAntlrJsoncpp.Antlr}),
 	MakefileBuilder("C++/GNUmakefile_jsoncpp.mk", [SrcType.Cxx],
-		set(), Target.Host, EmbeddedType.Any,
+		[Have.OnlyPreprocess], Target.Host, EmbeddedType.Any,
 		{StatusAntlrJsoncpp.Jsoncpp}),
 	MakefileBuilder("C++/GNUmakefile_antlr_jsoncpp.mk", [SrcType.Cxx],
-		set(), Target.Host, EmbeddedType.Any,
+		[Have.OnlyPreprocess], Target.Host, EmbeddedType.Any,
 		{StatusAntlrJsoncpp.Antlr, StatusAntlrJsoncpp.Jsoncpp}),
 
 	MakefileBuilder("C++/GNUmakefile_cxx.mk", [SrcType.Cxx]),
