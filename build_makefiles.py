@@ -95,7 +95,7 @@ class MakefileBuilder:
 		f.write(self.get_final_flags())
 		f.write(self.get_generated_dirs_and_lists())
 		f.write(self.get_phonies_part_0())
-		f.write(self.get_compiles_part_0())
+		f.write(self.get_compiles())
 
 
 		f.close()
@@ -553,7 +553,7 @@ class MakefileBuilder:
 
 		return ret
 
-	def get_compiles_part_0(self):
+	def get_compiles(self):
 		ret = str()
 
 		if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
@@ -565,7 +565,7 @@ class MakefileBuilder:
 			ret += sconcat("\t&& antlr4 -no-listener -visitor ",
 				"-Dlanguage=Cpp $(GRAMMAR_PREFIX).g4 \\\n")
 			ret += "\t&& rm $(GRAMMAR_PREFIX).g4\n"
-			ret += "\n"
+		ret += "\n"
 
 
 		ret += "# Here's where things get really messy. \n"
@@ -624,6 +624,19 @@ class MakefileBuilder:
 				"-MMD -S $(VERBOSE_ASM_FLAG) $< -o $@\n")
 			return ret
 
+			#	$(CC) $(C_FLAGS) -MMD -E $< -o $@
+		def __only_preprocess_hll_compile_middle(self, some_src_type):
+			ret = str()
+			compiler_rhs_var = self.__get_rhs_var(self
+				.convert_src_type_to_compiler_var(some_src_type))
+			flags_rhs_var = self.__get_rhs_var(self.__get_var
+				(some_src_type, "_FLAGS"))
+
+			#ret += "\t$(CXX) $(CXX_FLAGS) -MMD -E $< -o $@\n"
+			ret += sconcat("\t", compiler_rhs_var, " ", flags_rhs_var, " ",
+				"-MMD -E $< -o $@\n")
+			return ret
+
 		def __any_compile_end(dst_file_dir):
 			ret = str()
 			ret += sconcat("\t@cp $(", dst_file_dir, ")/$*.d ",
@@ -655,6 +668,16 @@ class MakefileBuilder:
 			ret += __any_compile_end("ASMOUTDIR")
 			return ret
 
+		def __gen_only_preprocess_hll_compile(self, some_src_type):
+			ret = str()
+
+			ret += __any_compile_header(self, src_type, "_EFILES",
+				"PREPROCDIR", ".E")
+			ret += __only_preprocess_hll_compile_middle(self,
+				some_src_type)
+			ret += __any_compile_end("PREPROCDIR")
+			return ret
+
 		#non_bin_src_types = self.get_non_bin_src_types()
 		supported_hlls_set = set(self.get_supported_hlls())
 		#for src_type in non_bin_src_types:
@@ -684,6 +707,53 @@ class MakefileBuilder:
 				if (src_type in supported_hlls_set):
 					ret += __gen_do_asmout_hll_compile(self, src_type)
 					ret += "\n"
+
+		ret += "\n"
+		ret += "\n"
+
+		ret += "-include $(PFILES)\n"
+		ret += "\n"
+		ret += "#¯\(°_o)/¯\n"
+		ret += "\n"
+
+		if (Have.OnlyPreprocess in self.__haves):
+			
+			ret += ".PHONY : only_preprocess\n"
+			ret += "only_preprocess : only_preprocess_pre $(EFILES)\n"
+			ret += "\n"
+			ret += ".PHONY : only_preprocess_pre\n"
+			ret += "only_preprocess_pre :\n"
+			ret += "\tmkdir -p $(DEPDIR) $(PREPROCDIR)\n"
+			ret += "\t@for efile in $(EFILES); \\\n"
+			ret += "\tdo \\\n"
+			ret += "\t\tmkdir -p $$(dirname $$efile); \\\n"
+			ret += "\tdone\n"
+			ret += "\t@for pfile in $(PFILES); \\\n"
+			ret += "\tdo \\\n"
+			ret += "\t\tmkdir -p $$(dirname $$pfile); \\\n"
+			ret += "\tdone\n"
+
+			ret += "\n"
+			ret += "\n"
+
+
+			#$(CXX_EFILES) : $(PREPROCDIR)/%.E : %.cpp
+			#	$(CXX) $(CXX_FLAGS) -MMD -E $< -o $@
+			#	@cp $(PREPROCDIR)/$*.d $(DEPDIR)/$*.P
+			#	@rm -f $(PREPROCDIR)/$*.d
+
+
+			#$(C_EFILES) : $(PREPROCDIR)/%.E : %.c
+			#	$(CC) $(C_FLAGS) -MMD -E $< -o $@
+			#	@cp $(PREPROCDIR)/$*.d $(DEPDIR)/$*.P
+			#	@rm -f $(PREPROCDIR)/$*.d
+
+			for src_type in self.__src_types:
+				if (src_type in supported_hlls_set):
+					ret += __gen_only_preprocess_hll_compile(self,
+						src_type)
+					ret += "\n"
+
 
 		return ret
 
