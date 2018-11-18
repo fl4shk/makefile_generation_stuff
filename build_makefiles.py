@@ -44,13 +44,15 @@ class EmbeddedType(enum.Enum):
 class MakefileBuilder:
 	__src_type_properties \
 		= {SrcType.Cxx: {"prefix": "CXX", "src_prefix": "CXX",
-			"file_ext": ".cpp"},
-		SrcType.C: {"prefix": "C", "src_prefix": "C", "file_ext": ".c"},
-		SrcType.S: {"prefix": "S", "src_prefix": "S", "file_ext": ".s"},
+			"file_ext": ".cpp", "compiler_var": "CXX"},
+		SrcType.C: {"prefix": "C", "src_prefix": "C", "file_ext": ".c",
+			"compiler_var": "CC"},
+		SrcType.S: {"prefix": "S", "src_prefix": "S", "file_ext": ".s",
+			"compiler_var": "AS"},
 		SrcType.Ns: {"prefix": "NS", "src_prefix": "S",
-			"file_ext": ".nasm"},
+			"file_ext": ".nasm", "compiler_var": "NS"},
 		SrcType.Bin: {"prefix": "BIN", "src_prefix": "BIN",
-			"file_ext": ".bin"}}
+			"file_ext": ".bin", "compiler_var": "BINCOMP"}}
 
 	def __init__(self, filename, src_types, haves=set(),
 		target=Target.Host, embedded_type=EmbeddedType.Any,
@@ -92,6 +94,8 @@ class MakefileBuilder:
 		f.write(self.get_embedded_extras())
 		f.write(self.get_final_flags())
 		f.write(self.get_generated_dirs_and_lists())
+		f.write(self.get_phonies_part_0())
+		f.write(self.get_compiles_part_0())
 
 
 		f.close()
@@ -358,7 +362,7 @@ class MakefileBuilder:
 					and (src_type in supported_hlls_set))):
 
 					ret += self.__get_rhs_var(self.__get_var(src_type,
-						"_OFILES"))
+						some_suffix))
 					if ((i + 1) != len(self.__src_types)):
 						ret += " "
 			ret += "\n"
@@ -368,16 +372,13 @@ class MakefileBuilder:
 
 		if (SrcType.Bin in set(self.__src_types)):
 			ret += gen_regular_lists(self, SrcType.Bin, supported_hlls_set)
-			ret += "\n"
+			#ret += "\n"
 		else:
 			ret += "\n\n"
 		#ret += "\n"
 
 		#for src_type in self.__src_types:
-		non_bin_src_types = []
-		for src_type in self.__src_types:
-			if (src_type != SrcType.Bin):
-				non_bin_src_types += [src_type]
+		non_bin_src_types = self.get_non_bin_src_types()
 
 		for i in range(len(non_bin_src_types)):
 			src_type = non_bin_src_types[i]
@@ -386,7 +387,8 @@ class MakefileBuilder:
 			#ret += "\n"
 
 			if (((i + 1) == len(non_bin_src_types))
-				and (src_type not in supported_hlls_set)):
+				and ((src_type not in supported_hlls_set)
+				or (Have.Disassemble in self.__haves))):
 				ret += "\n"
 
 		#ret += "\n"
@@ -422,7 +424,7 @@ class MakefileBuilder:
 			ret += gen_final_list(self, "EFILES", "_EFILES", True)
 			#EFILES:=$(CXX_EFILES) $(C_EFILES)
 
-		ret += "\n"
+			ret += "\n"
 
 
 
@@ -434,7 +436,219 @@ class MakefileBuilder:
 				"$(MODIFED_GENERATED_SOURCES) \\\n")
 			ret += "\t$(FINAL_GENERATED_SOURCES)\n"
 
-		ret += "\n"
+			ret += "\n"
+
+		return ret
+
+	def get_phonies_part_0(self):
+		ret = str()
+
+		if (not StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
+			ret += ".PHONY : all\n"
+			ret += "all : all_pre $(OFILES)\n"
+			ret += "\t$(LD) $(OFILES) -o $(PROJ) $(LD_FLAGS)\n"
+			ret += "\n"
+			ret += "\n"
+			ret += "# all_objs is ENTIRELY optional\n"
+			ret += ".PHONY : all_objs\n"
+			ret += "all_objs : all_pre $(OFILES)\n"
+			ret += "\t@#\n"
+			ret += "\n"
+			ret += "\n"
+
+			if (Have.Disassemble in self.__haves):
+				ret += ".PHONY : do_asmouts\n"
+				ret += "do_asmouts : all_pre all_pre_asmout $(ASMOUTS)\n"
+				ret += "\t@#\n"
+			ret += "\n"
+			ret += "\n"
+
+			ret += ".PHONY : all_pre\n"
+			ret += "all_pre :\n"
+			ret += "\tmkdir -p $(OBJDIR) $(DEPDIR)\n"
+			ret += "\t@for ofile in $(OFILES); \\\n"
+			ret += "\tdo \\\n"
+			ret += "\t\tmkdir -p $$(dirname $$ofile); \\\n"
+			ret += "\tdone\n"
+			ret += "\t@for pfile in $(PFILES); \\\n"
+			ret += "\tdo \\\n"
+			ret += "\t\tmkdir -p $$(dirname $$pfile); \\\n"
+			ret += "\tdone\n"
+			ret += "\n"
+			ret += "\n"
+			ret += "\n"
+
+			if (Have.Disassemble in self.__haves):
+				ret += ".PHONY : all_pre_asmout\n"
+				ret += "all_pre_asmout :\n"
+				ret += "\tmkdir -p $(ASMOUTDIR)\n"
+				ret += "\t@for asmout in $(ASMOUTS); \\\n"
+				ret += "\tdo \\\n"
+				ret += "\t\tmkdir -p $$(dirname $$asmout); \\\n"
+				ret += "\tdone\n"
+				ret += "\n"
+			ret += "\n"
+		else:
+			ret += ".PHONY : all\n"
+			ret += "all : all_pre $(MODIFED_GENERATED_SOURCES)\n"
+			ret += "\t@$(MAKE) final_generated\n"
+			ret += "\n"
+			ret += ".PHONY : final_generated\n"
+			ret += "final_generated : all_pre $(FINAL_GENERATED_SOURCES)\n"
+			ret += "\t@$(MAKE) non_generated\n"
+			ret += "\n"
+			ret += ".PHONY : non_generated\n"
+			ret += "non_generated : all_pre $(OFILES)\n"
+			ret += "\t$(LD) $(OFILES) -o $(PROJ) $(LD_FLAGS)\n"
+			ret += "\n"
+			ret += "\n"
+
+			ret += "# all_objs is ENTIRELY optional\n"
+			ret += ".PHONY : all_objs\n"
+			ret += "all_objs : all_pre $(OFILES)\n"
+			ret += "\t@#\n"
+			ret += "\n"
+			ret += "\n"
+
+			if (Have.Disassemble in self.__haves):
+				ret += ".PHONY : do_asmouts\n"
+				ret += "do_asmouts : all_pre all_pre_asmout $(ASMOUTS)\n"
+				ret += "\t@#\n"
+			ret += "\n"
+			ret += "\n"
+
+
+			ret += ".PHONY : all_pre\n"
+			ret += "all_pre :\n"
+			ret += "\tmkdir -p $(OBJDIR) $(DEPDIR) src/gen_src/\n"
+			ret += "\t@for ofile in $(OFILES); \\\n"
+			ret += "\tdo \\\n"
+			ret += "\t\tmkdir -p $$(dirname $$ofile); \\\n"
+			ret += "\tdone\n"
+			ret += "\t@for pfile in $(PFILES); \\\n"
+			ret += "\tdo \\\n"
+			ret += "\t\tmkdir -p $$(dirname $$pfile); \\\n"
+			ret += "\tdone\n"
+
+			ret += "\n"
+			ret += "\n"
+			ret += "\n"
+
+			if (Have.Disassemble in self.__haves):
+				ret += ".PHONY : all_pre_asmout\n"
+				ret += "all_pre_asmout :\n"
+				ret += "\tmkdir -p $(ASMOUTDIR)\n"
+				ret += "\t@for asmout in $(ASMOUTS); \\\n"
+				ret += "\tdo \\\n"
+				ret += "\t\tmkdir -p $$(dirname $$asmout); \\\n"
+				ret += "\tdone\n"
+				ret += "\n"
+			ret += "\n"
+
+			ret += ".PHONY : grammar_stuff\n"
+			ret += sconcat("grammar_stuff : src/gen_src/$(GRAMMAR_PREFIX)",
+				"Parser.h \\\n")
+			ret += "\t@#\n"
+			ret += "\n"
+
+		return ret
+
+	def get_compiles_part_0(self):
+		ret = str()
+
+		if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
+			ret += sconcat("src/gen_src/$(GRAMMAR_PREFIX)Parser.h",
+				" : src/$(GRAMMAR_PREFIX).g4\n")
+			ret += "\tif [ ! -d src/gen_src ]; then make all_pre; fi; \\\n"
+			ret += sconcat("\tcp src/$(GRAMMAR_PREFIX).g4 src/gen_src ",
+				"&& cd src/gen_src \\\n")
+			ret += sconcat("\t&& antlr4 -no-listener -visitor ",
+				"-Dlanguage=Cpp $(GRAMMAR_PREFIX).g4 \\\n")
+			ret += "\t&& rm $(GRAMMAR_PREFIX).g4\n"
+			ret += "\n"
+
+
+		ret += "# Here's where things get really messy. \n"
+
+		def __any_compile_header(self, some_src_type):
+			ret = str()
+			# ret += "$(CXX_OFILES) : $(OBJDIR)/%.o : %.cpp\n"
+			ofiles_rhs_var = self.__get_rhs_var(self.__get_var
+				(some_src_type, "_OFILES"))
+			src_file_extension = self.get_src_file_extension(some_src_type)
+
+			ret += sconcat(ofiles_rhs_var, " : $(OBJDIR)/*.o : %",
+				src_file_extension, "\n")
+			return ret
+
+		def __hll_compile_middle(self, some_src_type):
+			ret = str()
+			compiler_rhs_var = self.__get_rhs_var(self
+				.convert_src_type_to_compiler_var(some_src_type))
+			flags_rhs_var = self.__get_rhs_var(self.__get_var
+				(some_src_type, "_FLAGS"))
+
+			ret += sconcat("\t@echo $@\" was updated or has no object ",
+				"file.  (Re)Compiling....\n")
+			# ret += "\t$(CXX) $(CXX_FLAGS) -MMD -c $< -o $@\n"
+			ret += sconcat("\t", compiler_rhs_var, " ", flags_rhs_var, " ",
+				"-MMD -c $< -o $@\n")
+			return ret
+
+		def __asm_compile_middle(self, some_src_type):
+			ret = str()
+			compiler_rhs_var = self.__get_rhs_var(self
+				.convert_src_type_to_compiler_var(some_src_type))
+			flags_rhs_var = self.__get_rhs_var(self.__get_var
+				(some_src_type, "_FLAGS"))
+
+			ret += sconcat("\t@echo $@\" was updated or has no object ",
+				"file.  (Re)Assembling....\n")
+			# ret += "\t$(AS) $(S_FLAGS) -MD $(OBJDIR)/$*.d -c $< -o $@\n"
+			ret += sconcat("\t", compiler_rhs_var, " ", flags_rhs_var, " ",
+				"-MD $(OBJDIR)/$*.d -c $< -o $@\n")
+			return ret
+
+		def __any_compile_end():
+			ret = str()
+			ret += "\t@cp $(OBJDIR)/$*.d $(DEPDIR)/$*.P\n"
+			ret += "\t@rm -f $(OBJDIR)/$*.d\n"
+			return ret
+
+		def __gen_regular_hll_compile(self, some_src_type):
+			ret = str()
+			ret += __any_compile_header(self, some_src_type)
+			ret += __hll_compile_middle(self, some_src_type)
+			ret += __any_compile_end()
+			return ret
+
+		def __gen_regular_asm_compile(self, some_src_type):
+			ret = str()
+			ret += __any_compile_header(self, some_src_type)
+			ret += __asm_compile_middle(self, some_src_type)
+			ret += __any_compile_end()
+			return ret
+
+		#non_bin_src_types = self.get_non_bin_src_types()
+		supported_hlls_set = set(self.get_supported_hlls())
+		#for src_type in non_bin_src_types:
+		#	if (src_type in supported_hlls_set):
+		#		ret += __gen_regular_hll_compile(self, src_type)
+		#	else:
+		#		if (src_type == SrcType.S):
+		#			ret += __gen_regular_asm_compile(self, src_type)
+
+		for src_type in self.__src_types:
+			if (src_type in supported_hlls_set):
+				ret += __gen_regular_hll_compile(self, src_type)
+				ret += "\n"
+
+		if (len(supported_hlls_set) != 0):
+			ret += "\n"
+
+		if (SrcType.S in set(self.__src_types)):
+			ret += __gen_regular_asm_compile(self, SrcType.S)
+			ret += "\n"
 
 		return ret
 
@@ -444,6 +658,8 @@ class MakefileBuilder:
 		return self.__src_type_properties[some_src_type]["src_prefix"]
 	def get_src_file_extension(self, some_src_type):
 		return self.__src_type_properties[some_src_type]["file_ext"]
+	def convert_src_type_to_compiler_var(self, some_src_type):
+		return self.__src_type_properties[some_src_type]["compiler_var"]
 
 	def __inner_get_initial_stuff(self, some_src_type):
 		ret = str()
@@ -451,9 +667,10 @@ class MakefileBuilder:
 		#flags_prefix = self.convert_src_type_to_prefix(some_src_type)
 		flags_var = self.__get_var(some_src_type, "_FLAGS")
 		flags_rhs_var = self.__get_rhs_var(flags_var)
+		compiler_var = self.convert_src_type_to_compiler_var(some_src_type)
 
 		if (some_src_type == SrcType.Cxx):
-			ret += "CXX:=$(PREFIX)g++\n"
+			ret += sconcat(compiler_var, ":=$(PREFIX)g++\n")
 			ret += flags_var + ":=" + flags_rhs_var \
 				+ " -std=c++17 -Wall"
 			if (StatusAntlrJsoncpp.Jsoncpp in self.__status_antlr_jsoncpp):
@@ -465,17 +682,17 @@ class MakefileBuilder:
 
 			#ret += "\n"
 		elif (some_src_type == SrcType.C):
-			ret += "CC:=$(PREFIX)gcc\n"
+			ret += sconcat(compiler_var, ":=$(PREFIX)gcc\n")
 			ret += flags_var + ":=" + flags_rhs_var \
 				+ " -std=c11 -Wall\n"
 			ret += "\n"
 		elif (some_src_type == SrcType.S):
-			ret += "AS:=$(PREFIX)as\n"
+			ret += sconcat(compiler_var, ":=$(PREFIX)as\n")
 
 			if (self.__target == Target.Host):
 				ret += "S_FLAGS:=$(S_FLAGS) -mnaked-reg #-msyntax=intel\n"
 		elif (some_src_type == SrcType.Ns):
-			ret += "NS:=nasm\n"
+			ret += sconcat(compiler_var, ":=nasm\n")
 			ret += "NS_FLAGS:=$(NS_FLAGS) -f elf64\n"
 
 		return ret
@@ -500,6 +717,13 @@ class MakefileBuilder:
 				ret += [non_hll]
 
 		return ret
+
+	def get_non_bin_src_types(self):
+		non_bin_src_types = []
+		for src_type in self.__src_types:
+			if (src_type != SrcType.Bin):
+				non_bin_src_types += [src_type]
+		return non_bin_src_types
 
 	def have_cxx(self):
 		return (SrcType.Cxx in set(self.__src_types))
