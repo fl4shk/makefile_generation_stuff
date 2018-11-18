@@ -487,7 +487,8 @@ class MakefileBuilder:
 				ret += "\t\tmkdir -p $$(dirname $$asmout); \\\n"
 				ret += "\tdone\n"
 				ret += "\n"
-			ret += "\n"
+			else:
+				ret += "\n"
 		else:
 			ret += ".PHONY : all\n"
 			ret += "all : all_pre $(MODIFED_GENERATED_SOURCES)\n"
@@ -707,6 +708,8 @@ class MakefileBuilder:
 				if (src_type in supported_hlls_set):
 					ret += __gen_do_asmout_hll_compile(self, src_type)
 					ret += "\n"
+		#else:
+		#	ret += "\n"
 
 		ret += "\n"
 		ret += "\n"
