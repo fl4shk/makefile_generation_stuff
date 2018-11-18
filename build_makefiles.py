@@ -96,6 +96,8 @@ class MakefileBuilder:
 		f.write(self.get_generated_dirs_and_lists())
 		f.write(self.get_phonies_part_0())
 		f.write(self.get_compiles())
+		f.write(self.get_phonies_part_1())
+		f.write(self.get_stuff_for_make_disassemble())
 
 
 		f.close()
@@ -105,8 +107,8 @@ class MakefileBuilder:
 		ret = str()
 		ret += "# These directories specify where source code files "
 		ret += "are located.\n"
-		ret += "# Edit these variables if more directories are needed.\n"
-		ret += "# Separate each entry by spaces\n"
+		ret += "# Edit these variables if more directories are needed.  \n"
+		ret += "# Separate each entry by spaces.\n"
 		ret += "\n\n"
 
 		ret += "SHARED_SRC_DIRS:=src \\\n"
@@ -237,6 +239,10 @@ class MakefileBuilder:
 		if (self.__target == Target.Embedded):
 			ret += "OBJCOPY:=$(PREFIX)objcopy\n"
 
+		if ((Have.Disassemble in self.__haves)
+			or (self.__target == Target.Embedded)):
+			ret += "\n"
+
 		ret += "\n"
 
 		#ret += "\n"
@@ -354,6 +360,7 @@ class MakefileBuilder:
 			supported_hlls_set = set(self.get_supported_hlls())
 
 			ret += sconcat(some_var_name, ":=")
+			j = 0
 			for i in range(len(self.__src_types)):
 				src_type = self.__src_types[i]
 
@@ -363,8 +370,11 @@ class MakefileBuilder:
 
 					ret += self.__get_rhs_var(self.__get_var(src_type,
 						some_suffix))
-					if ((i + 1) != len(self.__src_types)):
-						ret += " "
+					ret += " "
+
+			#ret = ret[0 : len(ret) - 2]
+			if (ret[len(ret) - 1] == " "):
+				ret = ret[0 : len(ret) - 1]
 			ret += "\n"
 			return ret
 
@@ -444,6 +454,7 @@ class MakefileBuilder:
 		ret = str()
 
 		if (not StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
+			ret += "\n"
 			ret += ".PHONY : all\n"
 			ret += "all : all_pre $(OFILES)\n"
 			ret += "\t$(LD) $(OFILES) -o $(PROJ) $(LD_FLAGS)\n"
@@ -702,6 +713,8 @@ class MakefileBuilder:
 			ret += "\n"
 
 		if (Have.Disassemble in self.__haves):
+			if (SrcType.S not in set(self.__src_types)):
+				ret += "\n"
 			ret += sconcat("# Here we have stuff for outputting assembly",
 				" source code instead of an object file.\n")
 			for src_type in self.__src_types:
@@ -757,6 +770,59 @@ class MakefileBuilder:
 						src_type)
 					ret += "\n"
 
+
+			ret += "\n"
+		ret += "\n"
+
+
+		return ret
+
+	def get_phonies_part_1(self):
+		ret = str()
+
+
+		ret += ".PHONY : clean\n"
+		ret += "clean :\n"
+		ret += sconcat("\trm -rfv $(OBJDIR) $(DEPDIR) $(ASMOUTDIR) ",
+			"$(PREPROCDIR) $(PROJ) tags *.taghl gmon.out")
+		if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
+			ret += " $(GENERATED_SOURCES) src/gen_src"
+		ret += "\n"
+		ret += "\n"
+		ret += "\n"
+
+		return ret
+
+	def get_stuff_for_make_disassemble(self):
+		ret = str()
+
+		if (Have.Disassemble in self.__haves):
+			ret += "# Flags for make disassemble*\n"
+			ret += "DISASSEMBLE_FLAGS:=$(DISASSEMBLE_BASE_FLAGS) -C -d\n"
+			ret += sconcat("DISASSEMBLE_ALL_FLAGS:=",
+				"$(DISASSEMBLE_BASE_FLAGS) -C -D\n")
+			ret += "\n"
+			ret += sconcat("DISASSEMBLE_2_FLAGS:=",
+				"$(DISASSEMBLE_BASE_FLAGS) -C -S -l -d\n")
+			ret += sconcat("DISASSEMBLE_ALL_2_FLAGS:=",
+				"$(DISASSEMBLE_BASE_FLAGS) -C -S -l -D\n")
+			ret += "\n"
+			ret += ".PHONY : disassemble\n"
+			ret += "disassemble :\n"
+			ret += "\t$(OBJDUMP) $(DISASSEMBLE_FLAGS) $(PROJ)\n"
+			ret += "\n"
+			ret += ".PHONY : disassemble_all\n"
+			ret += "disassemble_all :\n"
+			ret += "\t$(OBJDUMP) $(DISASSEMBLE_ALL_FLAGS) $(PROJ)\n"
+			ret += "\n"
+			ret += "\n"
+			ret += ".PHONY : disassemble_2\n"
+			ret += "disassemble_2 :\n"
+			ret += "\t$(OBJDUMP) $(DISASSEMBLE_2_FLAGS) $(PROJ)\n"
+			ret += "\n"
+			ret += ".PHONY : disassemble_all_2\n"
+			ret += "disassemble_all_2 :\n"
+			ret += "\t$(OBJDUMP) $(DISASSEMBLE_ALL_2_FLAGS) $(PROJ)\n"
 
 		return ret
 
