@@ -570,15 +570,16 @@ class MakefileBuilder:
 
 		ret += "# Here's where things get really messy. \n"
 
-		def __any_compile_header(self, some_src_type):
+		def __any_compile_header(self, some_src_type, dst_var_suffix,
+			dst_file_dir, dst_file_ext):
 			ret = str()
 			# ret += "$(CXX_OFILES) : $(OBJDIR)/%.o : %.cpp\n"
 			ofiles_rhs_var = self.__get_rhs_var(self.__get_var
-				(some_src_type, "_OFILES"))
+				(some_src_type, dst_var_suffix))
 			src_file_extension = self.get_src_file_extension(some_src_type)
 
-			ret += sconcat(ofiles_rhs_var, " : $(OBJDIR)/*.o : %",
-				src_file_extension, "\n")
+			ret += sconcat(ofiles_rhs_var, " : $(", dst_file_dir, ")/%",
+				dst_file_ext, " : %", src_file_extension, "\n")
 			return ret
 
 		def __hll_compile_middle(self, some_src_type):
@@ -589,7 +590,7 @@ class MakefileBuilder:
 				(some_src_type, "_FLAGS"))
 
 			ret += sconcat("\t@echo $@\" was updated or has no object ",
-				"file.  (Re)Compiling....\n")
+				"file.  (Re)Compiling....\"\n")
 			# ret += "\t$(CXX) $(CXX_FLAGS) -MMD -c $< -o $@\n"
 			ret += sconcat("\t", compiler_rhs_var, " ", flags_rhs_var, " ",
 				"-MMD -c $< -o $@\n")
@@ -603,30 +604,55 @@ class MakefileBuilder:
 				(some_src_type, "_FLAGS"))
 
 			ret += sconcat("\t@echo $@\" was updated or has no object ",
-				"file.  (Re)Assembling....\n")
+				"file.  (Re)Assembling....\"\n")
 			# ret += "\t$(AS) $(S_FLAGS) -MD $(OBJDIR)/$*.d -c $< -o $@\n"
 			ret += sconcat("\t", compiler_rhs_var, " ", flags_rhs_var, " ",
 				"-MD $(OBJDIR)/$*.d -c $< -o $@\n")
 			return ret
 
-		def __any_compile_end():
+		def __do_asmout_hll_compile_middle(self, some_src_type):
 			ret = str()
-			ret += "\t@cp $(OBJDIR)/$*.d $(DEPDIR)/$*.P\n"
-			ret += "\t@rm -f $(OBJDIR)/$*.d\n"
+			compiler_rhs_var = self.__get_rhs_var(self
+				.convert_src_type_to_compiler_var(some_src_type))
+			flags_rhs_var = self.__get_rhs_var(self.__get_var
+				(some_src_type, "_FLAGS"))
+
+			#ret += sconcat("\t@echo $@\" was updated or has no object ",
+			#	"file.  (Re)Compiling....\"\n")
+			#ret += "\t$(CXX) $(CXX_FLAGS) -MMD -S $(VERBOSE_ASM_FLAG) $< -o $@\n"
+			ret += sconcat("\t", compiler_rhs_var, " ", flags_rhs_var, " ",
+				"-MMD -S $(VERBOSE_ASM_FLAG) $< -o $@\n")
+			return ret
+
+		def __any_compile_end(dst_file_dir):
+			ret = str()
+			ret += sconcat("\t@cp $(", dst_file_dir, ")/$*.d ",
+				"$(DEPDIR)/$*.P\n")
+			ret += sconcat("\t@rm -f $(", dst_file_dir, ")/$*.d\n")
 			return ret
 
 		def __gen_regular_hll_compile(self, some_src_type):
 			ret = str()
-			ret += __any_compile_header(self, some_src_type)
+			ret += __any_compile_header(self, some_src_type, "_OFILES",
+				"OBJDIR", ".o")
 			ret += __hll_compile_middle(self, some_src_type)
-			ret += __any_compile_end()
+			ret += __any_compile_end("OBJDIR")
 			return ret
 
 		def __gen_regular_asm_compile(self, some_src_type):
 			ret = str()
-			ret += __any_compile_header(self, some_src_type)
+			ret += __any_compile_header(self, some_src_type, "_OFILES",
+				"OBJDIR", ".o")
 			ret += __asm_compile_middle(self, some_src_type)
-			ret += __any_compile_end()
+			ret += __any_compile_end("OBJDIR")
+			return ret
+
+		def __gen_do_asmout_hll_compile(self, some_src_type):
+			ret = str()
+			ret += __any_compile_header(self, some_src_type, "_ASMOUTS",
+				"ASMOUTDIR", ".s")
+			ret += __do_asmout_hll_compile_middle(self, some_src_type)
+			ret += __any_compile_end("ASMOUTDIR")
 			return ret
 
 		#non_bin_src_types = self.get_non_bin_src_types()
@@ -649,6 +675,15 @@ class MakefileBuilder:
 		if (SrcType.S in set(self.__src_types)):
 			ret += __gen_regular_asm_compile(self, SrcType.S)
 			ret += "\n"
+			ret += "\n"
+
+		if (Have.Disassemble in self.__haves):
+			ret += sconcat("# Here we have stuff for outputting assembly",
+				" source code instead of an object file.\n")
+			for src_type in self.__src_types:
+				if (src_type in supported_hlls_set):
+					ret += __gen_do_asmout_hll_compile(self, src_type)
+					ret += "\n"
 
 		return ret
 
