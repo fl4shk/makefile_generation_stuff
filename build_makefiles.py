@@ -919,19 +919,25 @@ class MakefileBuilder:
 builders \
 = [ \
 	MakefileBuilder("generic/GNUmakefile_generic.mk", [SrcType.Generic]),
+
 	MakefileBuilder("C++/GNUmakefile_antlr.mk", [SrcType.Cxx],
-		[Have.OnlyPreprocess], Target.Host, EmbeddedType.Any,
-		{StatusAntlrJsoncpp.Antlr}),
+		{Have.Disassemble, Have.OnlyPreprocess}, Target.Host,
+		EmbeddedType.Any, {StatusAntlrJsoncpp.Antlr}),
+
 	MakefileBuilder("C++/GNUmakefile_jsoncpp.mk", [SrcType.Cxx],
-		[Have.OnlyPreprocess], Target.Host, EmbeddedType.Any,
-		{StatusAntlrJsoncpp.Jsoncpp}),
+		{Have.Disassemble, Have.OnlyPreprocess}, Target.Host,
+		EmbeddedType.Any, {StatusAntlrJsoncpp.Jsoncpp}),
+
 	MakefileBuilder("C++/GNUmakefile_antlr_jsoncpp.mk", [SrcType.Cxx],
-		[Have.OnlyPreprocess], Target.Host, EmbeddedType.Any,
-		{StatusAntlrJsoncpp.Antlr, StatusAntlrJsoncpp.Jsoncpp}),
+		{Have.Disassemble, Have.OnlyPreprocess}, Target.Host,
+		EmbeddedType.Any, {StatusAntlrJsoncpp.Antlr,
+		StatusAntlrJsoncpp.Jsoncpp}),
 
 	MakefileBuilder("C++/GNUmakefile_cxx.mk", [SrcType.Cxx]),
+
 	MakefileBuilder("C++/GNUmakefile_cxx_dis.mk", [SrcType.Cxx],
 		{Have.Disassemble}),
+
 	MakefileBuilder("C++/GNUmakefile_cxx_do_arm_full.mk", [SrcType.Cxx,
 		SrcType.S, SrcType.Bin], {Have.Disassemble, Have.OnlyPreprocess},
 		Target.Embedded, EmbeddedType.Arm),
