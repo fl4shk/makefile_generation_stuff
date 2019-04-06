@@ -1,2 +1,0 @@
-@cp $(PREPROCDIR)/$*.d $(DEPDIR)/$*.P
-	@rm -f $(PREPROCDIR)/$*.d

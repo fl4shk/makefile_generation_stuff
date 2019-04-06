@@ -19,9 +19,6 @@ C/*
 C++/*
 generic/*
 D/*
-*.mk
 HDL/*
-old_gpp_stuff/C/*
-old_gpp_stuff/C++/*
-old_gpp_stuff/generic/*
+old*/*
 testing/*

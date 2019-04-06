@@ -1,2 +1,0 @@
-#define SHARED_REGULAR_BUILD_PART_1( first_prefix, src_ext_suffix, ext_prefix ) ANY_BUILD_PART_1(first_prefix,src_ext_suffix,ext_prefix,o,_OFILES,OBJDIR)
-#define SHARED_REGULAR_BUILD_PART_2 ANY_BUILD_PART_2

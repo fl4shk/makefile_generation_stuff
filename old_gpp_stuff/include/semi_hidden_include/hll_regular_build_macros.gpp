@@ -1,5 +1,0 @@
-#define HLL_REGULAR_BUILD_PART_3 ANY_BUILD_PART_3(Compiling)
-#define HLL_REGULAR_BUILD_PART_4( compiler, flags_prefix ) ANY_HLL_BUILD_PART_4(compiler,flags_prefix,-c)
-#define HLL_REGULAR_BUILD_PART_5( ext_prefix ) ANY_BUILD_PART_5(OBJDIR,DEPDIR,ext_prefix)
-#define HLL_REGULAR_BUILD_PART_6( ext_prefix ) ANY_BUILD_PART_6(OBJDIR,DEPDIR,ext_prefix)
-#define HLL_REGULAR_BUILD_PART_7( ext_prefix ) ANY_BUILD_PART_7(OBJDIR,ext_prefix)

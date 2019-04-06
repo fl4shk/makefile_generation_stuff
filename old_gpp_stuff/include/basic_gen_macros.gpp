@@ -1,7 +1,0 @@
-#define gen_vpath( arg_1 ) $(foreach DIR,$(concat(arg_1,_DIRS)),$(CURDIR)/$(DIR))
-#if 0
-# old version of gen_sources
-#define gen_sources( arg_1, arg_2, arg_3, arg_4 ) concat(arg_1,_SOURCES):=$(foreach DIR,$(concat(arg_2,_DIRS)),$(notdir $(wildcard $(DIR)/*.concat(arg_4,arg_3))))
-#endif
-#define gen_sources( arg_1, arg_2, arg_3, arg_4 ) concat(arg_1,_SOURCES):=$(foreach DIR,$(concat(arg_2,_DIRS)),$(wildcard $(DIR)/*.concat(arg_4,arg_3)))
-#define gen_group( first, second, ext_prefix, src_ext_suffix, dst_ext_suffix, dst_dir ) first:=$(second:%.concat(ext_prefix,src_ext_suffix)=$(dst_dir)/%.concat(ext_prefix,dst_ext_suffix))

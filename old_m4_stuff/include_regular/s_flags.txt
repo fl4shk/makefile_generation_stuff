@@ -1,1 +1,0 @@
-S_FLAGS:=$(S_FLAGS) -mnaked-reg #-msyntax=intel

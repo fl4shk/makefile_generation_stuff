@@ -1,2 +1,0 @@
-# This is used for do_asmouts
-#VERBOSE_ASM_FLAG:=-fverbose-asm

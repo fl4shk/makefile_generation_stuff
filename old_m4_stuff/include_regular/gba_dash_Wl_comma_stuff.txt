@@ -1,1 +1,0 @@
--Wl,--entry=_start2 -lmm
