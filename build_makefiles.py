@@ -116,7 +116,7 @@ class MakefileBuilder:
 		if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
 			ret += "\tsrc/gen_src \\\n"
 		if (StatusAntlrJsoncpp.Jsoncpp in self.__status_antlr_jsoncpp):
-			ret += "\tsrc/liborangepower_src \\\n"
+			ret += "\tsrc/liborangepower_src/json_stuff \\\n"
 
 		#if (len(self.__status_antlr_jsoncpp) == 0):
 		#	ret += "\n"
@@ -576,7 +576,11 @@ class MakefileBuilder:
 				"&& cd src/gen_src \\\n")
 			ret += sconcat("\t&& antlr4 -no-listener -visitor ",
 				"-Dlanguage=Cpp $(GRAMMAR_PREFIX).g4 \\\n")
-			ret += "\t&& rm $(GRAMMAR_PREFIX).g4\n"
+			ret += "\t&& rm $(GRAMMAR_PREFIX).g4 \\\n"
+			ret += "\t&& find *.cpp -type f -print0 \\\n"
+			ret += "\t\t| xargs -0 sed -i 's/\<u8\>\"/\"/g' \\\n"
+			ret += "\t&& find *.cpp -type f -print0 \\\n"
+			ret += "\t\t| xargs -0 sed -i 's/\[=\]/\[=, this\]/g\n"
 		ret += "\n"
 
 
@@ -846,7 +850,7 @@ class MakefileBuilder:
 		if (some_src_type == SrcType.Cxx):
 			ret += sconcat(compiler_var, ":=$(PREFIX)g++\n")
 			ret += flags_var + ":=" + flags_rhs_var \
-				+ " -std=c++17 -Wall"
+				+ " -std=c++2a -Wall"
 			if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
 				ret += " -I/usr/include/antlr4-runtime/"
 			if (StatusAntlrJsoncpp.Jsoncpp in self.__status_antlr_jsoncpp):

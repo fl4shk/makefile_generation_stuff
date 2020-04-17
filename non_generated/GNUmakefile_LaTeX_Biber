@@ -8,6 +8,7 @@ build/${PROJECT}.bbl: build/${PROJECT}.bcf
 	biber build/${PROJECT}
 
 build/${PROJECT}.bcf: ${PROJECT}.tex
+	mkdir -p build
 	lualatex --output-directory=build ${PROJECT}
 
 build/${PROJECT}.rtf: build/${PROJECT}.pdf
