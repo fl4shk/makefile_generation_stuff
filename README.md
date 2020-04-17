@@ -20,7 +20,14 @@ would defeat the purpose of makefile\_generic\_src.gpp to do that.
 Generation of GNUmakefiles using GNU m4.
 -->
 
+<!--
 These are indeed specific to the GNU version of Make.
+-->
+
+This is just a script (`build\_makefiles.py`) to build some (compatible with
+GNU Make only) makefiles and some non-generated ones.
+
+At some point I should probably clean up the `build\_makefiles.py` script.
 
 These are mostly intended for my own personal use, but feel free to pick
 them up if that's of interest to you.
