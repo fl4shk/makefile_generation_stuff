@@ -580,7 +580,7 @@ class MakefileBuilder:
 			ret += "\t&& find *.cpp -type f -print0 \\\n"
 			ret += "\t\t| xargs -0 sed -i 's/\<u8\>\"/\"/g' \\\n"
 			ret += "\t&& find *.cpp -type f -print0 \\\n"
-			ret += "\t\t| xargs -0 sed -i 's/\[=\]/\[=, this\]/g\n"
+			ret += "\t\t| xargs -0 sed -i 's/\[=\]/\[=, this\]/g'\n"
 		ret += "\n"
 
 
