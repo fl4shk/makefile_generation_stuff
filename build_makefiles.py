@@ -850,7 +850,7 @@ class MakefileBuilder:
 		if (some_src_type == SrcType.Cxx):
 			ret += sconcat(compiler_var, ":=$(PREFIX)g++\n")
 			ret += flags_var + ":=" + flags_rhs_var \
-				+ " -std=c++2a -Wall"
+				+ " -std=c++20 -fmodules-ts -Wall"
 			if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
 				ret += " -I/usr/include/antlr4-runtime/"
 			if (StatusAntlrJsoncpp.Jsoncpp in self.__status_antlr_jsoncpp):
