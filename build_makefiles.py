@@ -265,7 +265,7 @@ class MakefileBuilder:
 		if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
 			ret += "\t-lantlr4-runtime \\\n"
 		if (StatusAntlrJsoncpp.Jsoncpp in self.__status_antlr_jsoncpp):
-			ret += "\t-ljsoncpp \\\n"
+			ret += "\t$(shell pkg-config --libs jsoncpp) \\\n"
 
 		ret += "\n"
 		ret += "\n"
