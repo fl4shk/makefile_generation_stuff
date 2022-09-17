@@ -27,9 +27,12 @@ class Have(enum.Enum):
 	Disassemble = enum.auto()
 	OnlyPreprocess = enum.auto()
 
-class StatusAntlrJsoncpp(enum.Enum):
+class StatusExtraStuff(enum.Enum):
 	Antlr = enum.auto()
 	Jsoncpp = enum.auto()
+	Sdl2 = enum.auto()
+	LopBinser = enum.auto()
+	LopGameStuff = enum.auto()
 
 class Target(enum.Enum):
 	Host = enum.auto()
@@ -56,7 +59,7 @@ class MakefileBuilder:
 
 	def __init__(self, filename, src_types, haves=set(),
 		target=Target.Host, embedded_type=EmbeddedType.Any,
-		status_antlr_jsoncpp=set()):
+		status_extra_stuff=set()):
 
 		self.__filename = filename
 
@@ -73,7 +76,7 @@ class MakefileBuilder:
 			self.__target = target
 
 		self.__embedded_type = embedded_type
-		self.__status_antlr_jsoncpp = status_antlr_jsoncpp
+		self.__status_extra_stuff = status_extra_stuff
 
 
 
@@ -113,12 +116,18 @@ class MakefileBuilder:
 
 		ret += "SHARED_SRC_DIRS:=src \\\n"
 
-		if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
+		if (StatusExtraStuff.Antlr in self.__status_extra_stuff):
 			ret += "\tsrc/gen_src \\\n"
-		if (StatusAntlrJsoncpp.Jsoncpp in self.__status_antlr_jsoncpp):
+		if (StatusExtraStuff.Jsoncpp in self.__status_extra_stuff):
 			ret += "\tsrc/liborangepower_src/json_stuff \\\n"
+		if (StatusExtraStuff.Sdl2 in self.__status_extra_stuff):
+			ret += "\tsrc/liborangepower_src/sdl2 \\\n"
+		if (StatusExtraStuff.LopBinser in self.__status_extra_stuff):
+			ret += "\tsrc/liborangepower_src/binser \\\n"
+		if (StatusExtraStuff.LopGameStuff in self.__status_extra_stuff):
+			ret += "\tsrc/liborangepower_src/game_stuff \\\n"
 
-		#if (len(self.__status_antlr_jsoncpp) == 0):
+		#if (len(self.__status_extra_stuff) == 0):
 		#	ret += "\n"
 
 		ret += "\n"
@@ -139,7 +148,7 @@ class MakefileBuilder:
 		ret += "DEBUG_OPTIMIZATION_LEVEL:=-O0\n"
 		ret += "REGULAR_OPTIMIZATION_LEVEL:=-O2\n"
 		ret += "\n"
-		if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
+		if (StatusExtraStuff.Antlr in self.__status_extra_stuff):
 			ret += "GRAMMAR_PREFIX:=Grammar\n"
 		ret += "\n"
 		ret += "ALWAYS_DEBUG_SUFFIX:=_debug\n"
@@ -258,14 +267,16 @@ class MakefileBuilder:
 		ret += "# Initial linker flags\n"
 		ret += "LD_FLAGS:=$(LD_FLAGS) -lm"
 
-		if (len(self.__status_antlr_jsoncpp) != 0):
+		if (len(self.__status_extra_stuff) != 0):
 			ret += " \\"
 		ret += "\n"
 
-		if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
+		if (StatusExtraStuff.Antlr in self.__status_extra_stuff):
 			ret += "\t-lantlr4-runtime \\\n"
-		if (StatusAntlrJsoncpp.Jsoncpp in self.__status_antlr_jsoncpp):
+		if (StatusExtraStuff.Jsoncpp in self.__status_extra_stuff):
 			ret += "\t$(shell pkg-config --libs jsoncpp) \\\n"
+		if (StatusExtraStuff.Sdl2 in self.__status_extra_stuff):
+			ret += "\t$(shell pkg-config --libs sdl2) \\\n"
 
 		ret += "\n"
 		ret += "\n"
@@ -438,7 +449,7 @@ class MakefileBuilder:
 
 
 
-		if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
+		if (StatusExtraStuff.Antlr in self.__status_extra_stuff):
 			ret += "MODIFED_GENERATED_SOURCES:=\n"
 			ret += sconcat("FINAL_GENERATED_SOURCES:=src/gen_src/",
 				"$(GRAMMAR_PREFIX)Parser.h\n")
@@ -453,7 +464,7 @@ class MakefileBuilder:
 	def get_phonies_part_0(self):
 		ret = str()
 
-		if (not StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
+		if (not StatusExtraStuff.Antlr in self.__status_extra_stuff):
 			ret += "\n"
 			ret += ".PHONY : all\n"
 			ret += "all : all_pre $(OFILES)\n"
@@ -568,7 +579,7 @@ class MakefileBuilder:
 	def get_compiles(self):
 		ret = str()
 
-		if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
+		if (StatusExtraStuff.Antlr in self.__status_extra_stuff):
 			ret += sconcat("src/gen_src/$(GRAMMAR_PREFIX)Parser.h",
 				" : src/$(GRAMMAR_PREFIX).g4\n")
 			ret += "\tif [ ! -d src/gen_src ]; then make all_pre; fi; \\\n"
@@ -789,7 +800,7 @@ class MakefileBuilder:
 		ret += "clean :\n"
 		ret += sconcat("\trm -rfv $(OBJDIR) $(DEPDIR) $(ASMOUTDIR) ",
 			"$(PREPROCDIR) $(PROJ) tags *.taghl gmon.out")
-		if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
+		if (StatusExtraStuff.Antlr in self.__status_extra_stuff):
 			ret += " $(GENERATED_SOURCES) src/gen_src"
 		ret += "\n"
 		ret += "\n"
@@ -850,15 +861,25 @@ class MakefileBuilder:
 		if (some_src_type == SrcType.Cxx):
 			ret += sconcat(compiler_var, ":=$(PREFIX)g++\n")
 			ret += flags_var + ":=" + flags_rhs_var \
-				+ " -std=c++20 -fcoroutines -fmodules-ts -Wall"
-			if (StatusAntlrJsoncpp.Antlr in self.__status_antlr_jsoncpp):
-				ret += " -I/usr/include/antlr4-runtime/"
-			if (StatusAntlrJsoncpp.Jsoncpp in self.__status_antlr_jsoncpp):
+				+ " -std=c++23 -fcoroutines -fmodules-ts -Wall"
+			if (StatusExtraStuff.Antlr in self.__status_extra_stuff):
 				ret += " \\\n"
-				ret += "\t$(shell pkg-config --cflags jsoncpp)\n"
-			else:
-				ret += "\n"
-				ret += "\n"
+				ret += " -I/usr/include/antlr4-runtime/"
+			if (StatusExtraStuff.Jsoncpp in self.__status_extra_stuff):
+				ret += " \\\n"
+				ret += "\t$(shell pkg-config --cflags jsoncpp)"
+			if (StatusExtraStuff.Sdl2 in self.__status_extra_stuff):
+				ret += " \\\n"
+				ret += "\t$(shell pkg-config --cflags sdl2)"
+			#else:
+			#	ret += "\n"
+			#	ret += "\n"
+			ret += "\n"
+			ret += "\n"
+
+			ret += "ifdef DEBUG\n"
+			ret += "\tCXX_FLAGS:=$(CXX_FLAGS) -DDEBUG=1\n"
+			ret += "endif\n"
 
 			#ret += "\n"
 		elif (some_src_type == SrcType.C):
@@ -924,21 +945,41 @@ class MakefileBuilder:
 
 builders \
 = [ \
+	#--------
 	MakefileBuilder("generic/GNUmakefile_generic.mk", [SrcType.Generic]),
-
+	#--------
 	MakefileBuilder("C++/GNUmakefile_antlr.mk", [SrcType.Cxx],
 		{Have.Disassemble, Have.OnlyPreprocess}, Target.Host,
-		EmbeddedType.Any, {StatusAntlrJsoncpp.Antlr}),
+		EmbeddedType.Any, {StatusExtraStuff.Antlr}),
 
 	MakefileBuilder("C++/GNUmakefile_jsoncpp.mk", [SrcType.Cxx],
 		{Have.Disassemble, Have.OnlyPreprocess}, Target.Host,
-		EmbeddedType.Any, {StatusAntlrJsoncpp.Jsoncpp}),
+		EmbeddedType.Any, {StatusExtraStuff.Jsoncpp}),
 
-	MakefileBuilder("C++/GNUmakefile_antlr_jsoncpp.mk", [SrcType.Cxx],
+	MakefileBuilder \
+	(
+		"C++/GNUmakefile_antlr_jsoncpp.mk", [SrcType.Cxx],
 		{Have.Disassemble, Have.OnlyPreprocess}, Target.Host,
-		EmbeddedType.Any, {StatusAntlrJsoncpp.Antlr,
-		StatusAntlrJsoncpp.Jsoncpp}),
-
+		EmbeddedType.Any,
+		{
+			StatusExtraStuff.Antlr,
+			StatusExtraStuff.Jsoncpp
+		}
+	),
+	#--------
+	MakefileBuilder \
+	(
+		"C++/GNUmakefile_sdl2_ecs_etc.mk",
+		[SrcType.Cxx], {Have.Disassemble, Have.OnlyPreprocess},
+		Target.Host, EmbeddedType.Any,
+		{
+			StatusExtraStuff.Jsoncpp,
+			StatusExtraStuff.Sdl2,
+			StatusExtraStuff.LopBinser, 
+			StatusExtraStuff.LopGameStuff,
+		}
+	),
+	#--------
 	MakefileBuilder("C++/GNUmakefile_cxx.mk", [SrcType.Cxx]),
 
 	MakefileBuilder("C++/GNUmakefile_cxx_dis.mk", [SrcType.Cxx],
@@ -947,6 +988,7 @@ builders \
 	MakefileBuilder("C++/GNUmakefile_cxx_do_arm_full.mk", [SrcType.Cxx,
 		SrcType.S, SrcType.Bin], {Have.Disassemble, Have.OnlyPreprocess},
 		Target.Embedded, EmbeddedType.Arm),
+	#--------
 ]
 
 for builder in builders:
