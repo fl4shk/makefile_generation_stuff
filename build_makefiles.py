@@ -145,7 +145,8 @@ class MakefileBuilder:
 		ret += "# Whether or not to do debugging stuff\n"
 		ret += "#DEBUG:=yeah do debug\n"
 		ret += "\n"
-		ret += "DEBUG_OPTIMIZATION_LEVEL:=-O0\n"
+		#ret += "DEBUG_OPTIMIZATION_LEVEL:=-O0\n"
+		ret += "DEBUG_OPTIMIZATION_LEVEL:=-Og\n"
 		ret += "REGULAR_OPTIMIZATION_LEVEL:=-O2\n"
 		ret += "\n"
 		if (StatusExtraStuff.Antlr in self.__status_extra_stuff):
